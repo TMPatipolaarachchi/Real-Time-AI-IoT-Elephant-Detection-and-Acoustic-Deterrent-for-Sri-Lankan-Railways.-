@@ -7,6 +7,8 @@ import {
   Image,
   Alert,
   ScrollView,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -14,22 +16,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../context/AuthContext';
 
 export default function ProfileScreen() {
-  const [username, setUsername] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const { logout } = useContext(AuthContext);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [editedTrainNumber, setEditedTrainNumber] = useState('');
+  const [editedPhoneNumber, setEditedPhoneNumber] = useState('');
+  const [saving, setSaving] = useState(false);
+  const { user, userProfile, signOut, isOfflineMode, updateProfile, refreshProfile } = useContext(AuthContext);
 
   useEffect(() => {
     loadProfile();
   }, []);
 
+  useEffect(() => {
+    if (userProfile) {
+      setEditedName(user?.displayName || '');
+      setEditedTrainNumber(userProfile.trainNumber || '');
+      setEditedPhoneNumber(userProfile.phoneNumber || '');
+    }
+  }, [user, userProfile]);
+
   const loadProfile = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
       const storedImage = await AsyncStorage.getItem('profileImage');
-      
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
       
       if (storedImage) {
         setProfileImage(storedImage);
@@ -69,7 +78,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -78,16 +87,73 @@ export default function ProfileScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: logout,
+          onPress: async () => {
+            const result = await signOut();
+            if (!result.success) {
+              Alert.alert('Error', result.error || 'Failed to logout');
+            }
+          },
         },
       ]
     );
   };
 
+  const openEditModal = () => {
+    setEditedName(user?.displayName || '');
+    setEditedTrainNumber(userProfile?.trainNumber || '');
+    setEditedPhoneNumber(userProfile?.phoneNumber || '');
+    setEditModalVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editedName.trim()) {
+      Alert.alert('Error', 'Please enter your name');
+      return;
+    }
+
+    if (!editedTrainNumber.trim()) {
+      Alert.alert('Error', 'Please enter your train registration number');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const result = await updateProfile({
+        displayName: editedName.trim(),
+        trainNumber: editedTrainNumber.trim(),
+        phoneNumber: editedPhoneNumber.trim(),
+      });
+
+      if (result.success) {
+        setEditModalVisible(false);
+        Alert.alert('Success', 'Profile updated successfully!');
+        await refreshProfile();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+      console.error('Update profile error:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Driver';
+  const email = user?.email || 'No email';
+  const trainNumber = userProfile?.trainNumber || 'Not set';
+  const phoneNumber = userProfile?.phoneNumber || 'Not set';
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.profileSection}>
+          {isOfflineMode && (
+            <View style={styles.offlineBanner}>
+              <Text style={styles.offlineBannerText}>📡 Offline Mode</Text>
+            </View>
+          )}
+          
           <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
             {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
@@ -102,14 +168,29 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.username}>{username || 'Driver'}</Text>
+          <Text style={styles.username}>{displayName}</Text>
           <Text style={styles.role}>Train Driver</Text>
         </View>
 
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Username</Text>
-            <Text style={styles.infoValue}>{username || 'Not set'}</Text>
+            <Text style={styles.infoLabel}>Name</Text>
+            <Text style={styles.infoValue}>{displayName}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{email}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Train Number</Text>
+            <Text style={styles.infoValue}>{trainNumber}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Phone</Text>
+            <Text style={styles.infoValue}>{phoneNumber}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.infoRow}>
@@ -119,9 +200,16 @@ export default function ProfileScreen() {
           <View style={styles.divider} />
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Status</Text>
-            <Text style={styles.infoValue}>Active</Text>
+            <View style={styles.statusContainer}>
+              <View style={styles.statusDot} />
+              <Text style={styles.infoValue}>Active</Text>
+            </View>
           </View>
         </View>
+
+        <TouchableOpacity style={styles.editButton} onPress={openEditModal}>
+          <Text style={styles.editButtonText}>✏️ Edit Profile</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
@@ -136,6 +224,90 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={editModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                <Text style={styles.closeButton}>×</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Full Name</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter your name"
+                  value={editedName}
+                  onChangeText={setEditedName}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Train Registration Number</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="e.g., TR-1234 or 1234"
+                  value={editedTrainNumber}
+                  onChangeText={setEditedTrainNumber}
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Phone Number (Optional)</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter your phone number"
+                  value={editedPhoneNumber}
+                  onChangeText={setEditedPhoneNumber}
+                  keyboardType="phone-pad"
+                  editable={!saving}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  style={[styles.modalInput, styles.disabledInput]}
+                  value={email}
+                  editable={false}
+                />
+                <Text style={styles.helperText}>Email cannot be changed</Text>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setEditModalVisible(false)}
+                disabled={saving}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+                onPress={handleSaveProfile}
+                disabled={saving}
+              >
+                <Text style={styles.saveButtonText}>
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -151,6 +323,18 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     marginBottom: 30,
+  },
+  offlineBanner: {
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+  offlineBannerText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   imageContainer: {
     position: 'relative',
@@ -222,6 +406,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
+    alignItems: 'center',
   },
   infoLabel: {
     fontSize: 16,
@@ -232,9 +417,37 @@ const styles = StyleSheet.create({
     color: '#212121',
     fontWeight: '600',
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50',
+    marginRight: 8,
+  },
   divider: {
     height: 1,
     backgroundColor: '#E0E0E0',
+  },
+  editButton: {
+    backgroundColor: '#2E7D32',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  editButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   logoutButton: {
     backgroundColor: '#F44336',
@@ -265,6 +478,107 @@ const styles = StyleSheet.create({
   footerSubtext: {
     fontSize: 12,
     color: '#9E9E9E',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    width: '90%',
+    maxHeight: '80%',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#212121',
+  },
+  closeButton: {
+    fontSize: 32,
+    color: '#757575',
+    fontWeight: 'bold',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#424242',
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  disabledInput: {
+    backgroundColor: '#E0E0E0',
+    color: '#757575',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#9E9E9E',
+    marginTop: 4,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  cancelButtonText: {
+    color: '#757575',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#2E7D32',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#81C784',
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

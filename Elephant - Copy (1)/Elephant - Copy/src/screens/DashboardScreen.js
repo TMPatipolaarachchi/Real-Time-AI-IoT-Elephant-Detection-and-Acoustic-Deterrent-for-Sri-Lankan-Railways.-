@@ -17,6 +17,8 @@ import locationService from '../services/locationService';
 import esp32Service from '../services/esp32Service';
 import distanceService from '../services/distanceService';
 import esp32TestService from '../services/esp32TestService';
+import notificationSyncService from '../services/notificationSyncService';
+import { AuthContext } from '../context/AuthContext';
 
 export default function DashboardScreen() {
   const [esp32Data, setEsp32Data] = useState(null);
@@ -25,17 +27,25 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [unsyncedCount, setUnsyncedCount] = useState(0);
+  const [syncStatus, setSyncStatus] = useState(null);
+  
+  const { user, userProfile } = React.useContext(AuthContext);
 
   // Mock user name (replace with actual logged-in user)
-  const userName = "Sir !";
+  const userName = user?.displayName || "Sir!";
 
   useEffect(() => {
     initializeGPS();
     const clockInterval = startClock();
+    loadUnsyncedCount();
 
     // Listen for ESP32 incoming data
-    const unsubscribeESP32 = esp32Service.addListener((data) => {
+    const unsubscribeESP32 = esp32Service.addListener(async (data) => {
       setEsp32Data(data);
+
+      // Save notification to local storage and sync
+      await saveNotification(data);
 
       if (data.elephantDetected && data.elephantLocation) {
         distanceService.startCalculation(data.elephantLocation);
@@ -55,6 +65,14 @@ export default function DashboardScreen() {
       }
     );
 
+    // Listen for sync status updates
+    const unsubscribeSync = notificationSyncService.addSyncListener((status) => {
+      setSyncStatus(status);
+      if (status.status === 'complete') {
+        loadUnsyncedCount();
+      }
+    });
+
     loadStoredData();
 
     // AUTO-RUN TEST MODE WHEN IN DEVELOPMENT
@@ -71,6 +89,7 @@ export default function DashboardScreen() {
     return () => {
       unsubscribeESP32();
       unsubscribeDistance();
+      unsubscribeSync();
       distanceService.stopCalculation();
       locationService.stopWatching();
       esp32TestService.stop();
@@ -110,10 +129,46 @@ export default function DashboardScreen() {
     }
   };
 
+  const loadUnsyncedCount = async () => {
+    const count = await notificationSyncService.getUnsyncedCount();
+    setUnsyncedCount(count);
+  };
+
+  const saveNotification = async (data) => {
+    try {
+      const notificationData = {
+        elephantDetected: data.elephantDetected,
+        elephantLeft: data.elephantLeft,
+        riskLevel: data.riskLevel,
+        distance: distance,
+        elephantLocation: data.elephantLocation,
+        trainLocation: trainLocation,
+        userId: user?.uid,
+        trainNumber: userProfile?.trainNumber,
+        timestamp: data.timestamp,
+        deviceInfo: {
+          platform: Platform.OS,
+        },
+      };
+
+      await notificationSyncService.saveNotification(notificationData);
+      await loadUnsyncedCount();
+    } catch (error) {
+      console.error('Error saving notification:', error);
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await initializeGPS();
     await loadStoredData();
+    await loadUnsyncedCount();
+    
+    // Try to sync notifications if online
+    if (notificationSyncService.checkOnlineStatus()) {
+      await notificationSyncService.syncNotifications();
+    }
+    
     setRefreshing(false);
   };
 
