@@ -32,7 +32,7 @@ It uses a **hybrid approach** combining:
 ## 📂 Project Structure
 
 ```
-
+```
 elephent/
 │
 ├── rule.py                        # rule base classify
