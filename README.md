@@ -28,11 +28,10 @@ It uses a **hybrid approach** combining:
 - CSV-based input/output for easy analysis
 
 ---
-
+```
+```
 ## 📂 Project Structure
 
-```
-```
 elephent/
 │
 ├── rule.py                        # rule base classify
