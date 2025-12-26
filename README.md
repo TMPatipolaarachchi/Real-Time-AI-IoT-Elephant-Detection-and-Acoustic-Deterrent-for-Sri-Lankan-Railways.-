@@ -38,6 +38,7 @@ It uses a **hybrid approach** combining:
 - **Total samples:** ~1000 images (Aggressive: 500, Normal: 500)  
 
 ```
+```
 ## 📂 Project Structure
 
 elephent/
