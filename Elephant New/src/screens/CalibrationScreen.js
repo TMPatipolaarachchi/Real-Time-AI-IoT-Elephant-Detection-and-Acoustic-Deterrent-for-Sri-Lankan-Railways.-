@@ -31,6 +31,7 @@ export default function CalibrationScreen({ navigation }) {
   const [showImport, setShowImport] = useState(false);
   const [bulkImportText, setBulkImportText] = useState('');
   
+  
   // Add Pillar states
   const [showAddPillar, setShowAddPillar] = useState(false);
   const [newPillarName, setNewPillarName] = useState('');
