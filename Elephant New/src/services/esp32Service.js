@@ -134,6 +134,8 @@ class ESP32Service {
     }
   }
 
+  
+
   /**
    * Get ESP32 status
    * @param {string} esp32Ip - ESP32 IP address
