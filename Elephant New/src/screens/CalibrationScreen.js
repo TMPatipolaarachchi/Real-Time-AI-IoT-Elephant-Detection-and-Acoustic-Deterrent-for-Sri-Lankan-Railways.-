@@ -37,7 +37,7 @@ export default function CalibrationScreen({ navigation }) {
   const [newPillarName, setNewPillarName] = useState('');
   const [manualLat, setManualLat] = useState('');
   const [manualLon, setManualLon] = useState('');
-  
+
   
   // Edit Pillar states
   const [showEditPillar, setShowEditPillar] = useState(false);
@@ -45,6 +45,7 @@ export default function CalibrationScreen({ navigation }) {
   const [editPillarName, setEditPillarName] = useState('');
   const [editPillarLat, setEditPillarLat] = useState('');
   const [editPillarLon, setEditPillarLon] = useState('');
+  
   
   // Waypoints view states
   const [showWaypoints, setShowWaypoints] = useState(false);
