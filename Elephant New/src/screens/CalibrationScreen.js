@@ -46,7 +46,7 @@ export default function CalibrationScreen({ navigation }) {
   const [editPillarLat, setEditPillarLat] = useState('');
   const [editPillarLon, setEditPillarLon] = useState('');
   
-  
+
   // Waypoints view states
   const [showWaypoints, setShowWaypoints] = useState(false);
   const [selectedPillarWaypoints, setSelectedPillarWaypoints] = useState([]);
@@ -567,6 +567,7 @@ export default function CalibrationScreen({ navigation }) {
             </View>
           </View>
         </View>
+        
 
         {/* Current Location */}
         {currentLocation && (
