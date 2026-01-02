@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Buffer } from 'buffer';
 
 const OFFLINE_AUTH_KEY = '@offline_auth_data';
 const USER_PROFILE_KEY = '@user_profile';

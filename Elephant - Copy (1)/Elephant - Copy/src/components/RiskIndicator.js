@@ -12,11 +12,10 @@ export default function RiskIndicator({ riskLevel }) {
 
   const playAlarm = async () => {
   try {
-    console.log("Loading sound");
 const { sound } = await Audio.Sound.createAsync(
   require("../../assets/alarm.mp3"),
   {},
-  (status) => console.log("STATUS:", status)
+  (status) => {}
 );
 
 
@@ -28,7 +27,6 @@ const { sound } = await Audio.Sound.createAsync(
     Vibration.vibrate([500, 300, 500], true);
 
   } catch (error) {
-    console.log("Sound Error:", error);
   }
 };
 
@@ -44,7 +42,6 @@ const { sound } = await Audio.Sound.createAsync(
       }
       Vibration.cancel();
     } catch (e) {
-      console.log("Stop error:", e);
     }
   };
 
@@ -57,6 +54,11 @@ const { sound } = await Audio.Sound.createAsync(
     } else {
       stopAlarm();
     }
+    
+    // Cleanup when component unmounts
+    return () => {
+      stopAlarm();
+    };
   }, [riskLevel]);
 
   // -------------------------------
@@ -103,7 +105,7 @@ const { sound } = await Audio.Sound.createAsync(
       borderColor: "#FF5722",
       text: "HIGH RISK",
       subtext: "Proceed with caution",
-      icon: "⚠️",
+      icon: "⚠",
     },
     medium: {
       color: "#FF9800",
@@ -119,7 +121,7 @@ const { sound } = await Audio.Sound.createAsync(
       borderColor: "#4CAF50",
       text: "LOW RISK",
       subtext: "Monitor",
-      icon: "ℹ️",
+      icon: "ℹ",
     },
   }[riskLevel] || {
     color: "#757575",
@@ -155,7 +157,7 @@ const { sound } = await Audio.Sound.createAsync(
 
       {riskLevel === "critical" && (
         <View style={styles.blinkingContainer}>
-          <Text style={styles.blinkingText}>⚠️ EMERGENCY ⚠️</Text>
+          <Text style={styles.blinkingText}>⚠ EMERGENCY ⚠</Text>
 
         </View>
       )}

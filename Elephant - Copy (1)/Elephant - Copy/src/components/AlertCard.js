@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { formatDistance } from '../utils/haversine';
 
-export default function AlertCard({ esp32Data, distance }) {
+export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
   if (!esp32Data) {
     return (
       <View style={[styles.card, styles.noDataCard]}>
@@ -34,7 +34,7 @@ export default function AlertCard({ esp32Data, distance }) {
     return (
       <View style={[styles.card, styles.safeCard]}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>👁️</Text>
+          <Text style={styles.icon}>👁</Text>
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>Monitoring Active</Text>
@@ -47,8 +47,10 @@ export default function AlertCard({ esp32Data, distance }) {
   }
 
   // Elephant detected
-  const riskLevel = esp32Data.riskLevel || 'low';
-  const isCritical = distance !== null && distance < 1;
+  const riskLevel = esp32Data.riskLevel || 'high';
+  // Prefer ESP32 distance when available; fall back to legacy distance prop
+  const displayDistance = (esp32Data && esp32Data.distance !== undefined) ? esp32Data.distance : (distance !== undefined ? distance : null);
+  const isCritical = displayDistance !== null && displayDistance < 1;
   
   return (
     <View style={[styles.card, styles.alertCard, isCritical && styles.criticalCard]}>
@@ -61,43 +63,41 @@ export default function AlertCard({ esp32Data, distance }) {
           An elephant has been detected in the area. Please proceed with caution.
         </Text>
         
-        {/* Risk Level from ESP32 */}
-        {riskLevel && (
-          <View style={styles.riskInfo}>
-            <Text style={styles.riskLabel}>Risk Level (ESP32):</Text>
-            <Text style={[styles.riskValue, styles[`risk${riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)}`]]}>
-              {riskLevel.toUpperCase()}
-            </Text>
+        {/* Elephant Pillar Location */}
+        {elephantPillarName && (
+          <View style={styles.pillarLocationBox}>
+            <Text style={styles.pillarLocationLabel}>📍 Detected At:</Text>
+            <Text style={styles.pillarLocationValue}>{elephantPillarName}</Text>
           </View>
         )}
         
-        {distance !== null && (
+        {/* {displayDistance !== null && (
           <View style={styles.distanceInfo}>
             <Text style={styles.distanceLabel}>Current Distance:</Text>
             <Text style={[styles.distanceValue, isCritical && styles.criticalDistanceValue]}>
-              {formatDistance(distance)}
+              {formatDistance(displayDistance)}
             </Text>
             {isCritical && (
               <Text style={styles.criticalWarning}>
-                ⚠️ CRITICAL: Less than 1 km - Emergency braking recommended!
+                ⚠ CRITICAL: Less than 1 km - Emergency braking recommended!
               </Text>
             )}
           </View>
-        )}
-        {esp32Data.elephantLocation && (
+        )} */}
+        {esp32Data.elephantLocation && esp32Data.elephantLocation.latitude != null && esp32Data.elephantLocation.longitude != null && (
           <View style={styles.locationInfo}>
             <Text style={styles.locationLabel}>Detection Location:</Text>
             <Text style={styles.locationValue}>
-              {esp32Data.elephantLocation.latitude.toFixed(6)},{' '}
-              {esp32Data.elephantLocation.longitude.toFixed(6)}
+              {Number(esp32Data.elephantLocation.latitude).toFixed(6)},{' '}
+              {Number(esp32Data.elephantLocation.longitude).toFixed(6)}
             </Text>
           </View>
         )}
-        {esp32Data.timestamp && (
+        {(esp32Data.elephantLocation?.detectedAt || esp32Data.timestamp) && (
           <View style={styles.timestampInfo}>
             <Text style={styles.timestampLabel}>Detection Time:</Text>
             <Text style={styles.timestampValue}>
-              {new Date(esp32Data.timestamp).toLocaleString()}
+              {esp32Data.elephantLocation?.detectedAt || new Date(esp32Data.timestamp).toLocaleString()}
             </Text>
           </View>
         )}
@@ -251,6 +251,22 @@ const styles = StyleSheet.create({
   timestampValue: {
     fontSize: 12,
     color: '#424242',
+  },  pillarLocationBox: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
   },
-});
-
+  pillarLocationLabel: {
+    fontSize: 13,
+    color: '#1976D2',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  pillarLocationValue: {
+    fontSize: 18,
+    color: '#0D47A1',
+    fontWeight: 'bold',
+  },});

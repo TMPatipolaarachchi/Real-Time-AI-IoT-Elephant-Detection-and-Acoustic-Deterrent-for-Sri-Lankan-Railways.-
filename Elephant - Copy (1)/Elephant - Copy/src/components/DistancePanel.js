@@ -7,21 +7,19 @@ export default function DistancePanel({
   trainLocation,
   elephantLocation,
   gpsEnabled,
+  nearestPillar,
+  trackDistance,
+  straightDistance,
+  esp32Distances,
+  elephantPillarName,
 }) {
-  const [isCalculating, setIsCalculating] = useState(true);
-
-  useEffect(() => {
-    if (distance !== null) {
-      setIsCalculating(false);
-    } else if (trainLocation && elephantLocation) {
-      setIsCalculating(false);
-    }
-  }, [distance, trainLocation, elephantLocation]);
-
+  // Use ESP32's track distance as the main distance
+  const mainDistance = esp32Distances?.track_km ?? null;
+  
   if (!gpsEnabled) {
     return (
       <View style={[styles.panel, styles.errorPanel]}>
-        <Text style={styles.errorText}>⚠️ GPS Not Available</Text>
+        <Text style={styles.errorText}>⚠ GPS Not Available</Text>
         <Text style={styles.errorSubtext}>
           Please enable GPS to calculate distance
         </Text>
@@ -29,26 +27,41 @@ export default function DistancePanel({
     );
   }
 
-  if (!trainLocation || !elephantLocation) {
+  if (!trainLocation) {
     return (
       <View style={[styles.panel, styles.loadingPanel]}>
         <ActivityIndicator size="large" color="#2E7D32" />
-        <Text style={styles.loadingText}>Acquiring GPS location...</Text>
+        <Text style={styles.loadingText}>Acquiring train GPS location...</Text>
       </View>
     );
   }
 
-  if (distance === null) {
+  if (!elephantLocation) {
     return (
       <View style={[styles.panel, styles.loadingPanel]}>
         <ActivityIndicator size="large" color="#2E7D32" />
-        <Text style={styles.loadingText}>Calculating distance...</Text>
+        <Text style={styles.loadingText}>Waiting for elephant location...</Text>
       </View>
     );
   }
 
-  const isCritical = distance < 1;
-  const isClose = distance < 2;
+  if (mainDistance === null || mainDistance === undefined) {
+    return (
+      <View style={[styles.panel, styles.loadingPanel]}>
+        <ActivityIndicator size="large" color="#2E7D32" />
+        <Text style={styles.loadingText}>ESP32 calculating distance...</Text>
+      </View>
+    );
+  }
+
+  // Use only ESP32 distances - no app calculation
+  const isCritical = mainDistance < 1;
+  const isClose = mainDistance < 2;
+  
+  const displayTrackDistance = esp32Distances?.track_km || null;
+  const displayStraightDistance = esp32Distances?.straight_km || null;
+  const displayNearestPillarDistance = esp32Distances?.nearestPillar_km || null;
+  const displayNearestPillarName = esp32Distances?.nearestPillarName || null;
 
   return (
     <View
@@ -60,15 +73,13 @@ export default function DistancePanel({
     >
       <View style={styles.header}>
         <Text style={styles.title}>Train-Elephant Distance</Text>
-        {isCalculating && (
-          <ActivityIndicator size="small" color="#ffffff" />
-        )}
       </View>
 
       <View style={styles.distanceContainer}>
         <Text style={[styles.distance, isCritical && styles.criticalDistance]}>
-          {formatDistance(distance)}
+          {formatDistance(mainDistance)}
         </Text>
+        <Text style={styles.distanceSource}>Track Distance (ESP32)</Text>
         {isCritical && (
           <View style={styles.criticalBadge}>
             <Text style={styles.criticalText}>EMERGENCY</Text>
@@ -79,26 +90,13 @@ export default function DistancePanel({
       {isCritical && (
         <View style={styles.warningContainer}>
           <Text style={styles.warningText}>
-            ⚠️ CRITICAL: Distance less than 1 km
+            ⚠ CRITICAL: Distance less than 1 km
           </Text>
           <Text style={styles.warningSubtext}>
             Emergency braking recommended!
           </Text>
         </View>
       )}
-
-      <View style={styles.infoContainer}>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Status:</Text>
-          <Text style={styles.infoValue}>
-            {distance <= 0.0001 ? 'Reached (0 m)' : 'Calculating'}
-          </Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Update Rate:</Text>
-          <Text style={styles.infoValue}>Every 5 seconds</Text>
-        </View>
-      </View>
     </View>
   );
 }
@@ -149,7 +147,14 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: 'bold',
     color: '#ffffff',
+    marginBottom: 4,
+  },
+  distanceSource: {
+    fontSize: 12,
+    color: '#ffffff',
+    opacity: 0.8,
     marginBottom: 8,
+    fontStyle: 'italic',
   },
   criticalDistance: {
     fontSize: 56,
@@ -227,5 +232,153 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.9,
   },
+  pillarInfo: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+  pillarTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  pillarDistances: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  pillarDistanceItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  pillarDistanceDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  pillarDistanceLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    opacity: 0.9,
+    marginBottom: 4,
+  },
+  pillarDistanceValue: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  
+  // Elephant Pillar Box
+  elephantPillarBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  elephantPillarTitle: {
+    color: '#ffffff',
+    fontSize: 14,
+    opacity: 0.9,
+    marginBottom: 4,
+  },
+  elephantPillarName: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  
+  // ESP32 Distance Box
+  esp32DistanceBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+  },
+  esp32Title: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  distanceGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  distanceGridItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  distanceGridDivider: {
+    width: 1,
+    height: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: 8,
+  },
+  distanceGridLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    opacity: 0.9,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  distanceGridValue: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  distanceGridSubtext: {
+    color: '#ffffff',
+    fontSize: 10,
+    opacity: 0.7,
+    fontStyle: 'italic',
+  },
+  
+  // Nearest Pillar Box
+  nearestPillarBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+  },
+  nearestPillarTitle: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  nearestPillarRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  nearestPillarInfo: {
+    flex: 1,
+  },
+  nearestPillarName: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  nearestPillarLabel: {
+    color: '#ffffff',
+    fontSize: 11,
+    opacity: 0.7,
+  },
+  nearestPillarDistanceBox: {
+    alignItems: 'flex-end',
+  },
+  nearestPillarDistance: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+  },
 });
-

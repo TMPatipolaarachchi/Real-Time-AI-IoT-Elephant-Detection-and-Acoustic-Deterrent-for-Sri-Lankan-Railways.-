@@ -8,6 +8,8 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import LoginScreen from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import CalibrationScreen from './src/screens/CalibrationScreen';
+import FirstAlertsScreen from './src/screens/FirstAlertsScreen';
 import { AuthContext, AuthProvider } from './src/context/AuthContext';
 import { Audio } from "expo-av";
 
@@ -34,6 +36,23 @@ function MainTabs() {
         options={{
           title: 'Elephant Detection',
           tabBarLabel: 'Dashboard',
+        }}
+      />
+      <Tab.Screen 
+        name="Alerts" 
+        component={FirstAlertsScreen}
+        options={{
+          title: 'First Pillar Alerts',
+          tabBarLabel: 'Alerts',
+        }}
+      />
+      <Tab.Screen 
+        name="Calibration" 
+        component={CalibrationScreen}
+        options={{
+          title: 'Calibration & Pillars',
+          tabBarLabel: 'Calibrate',
+          headerShown: false,
         }}
       />
       <Tab.Screen 
@@ -98,4 +117,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
 });
-

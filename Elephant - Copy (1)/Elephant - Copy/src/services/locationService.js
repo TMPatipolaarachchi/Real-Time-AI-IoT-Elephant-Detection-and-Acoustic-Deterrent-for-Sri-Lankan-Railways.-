@@ -17,7 +17,6 @@ class LocationService {
       }
       return true;
     } catch (error) {
-      console.error('Error requesting location permissions:', error);
       return false;
     }
   }
@@ -44,7 +43,6 @@ class LocationService {
 
       return this.currentLocation;
     } catch (error) {
-      console.error('Error getting current location:', error);
       return null;
     }
   }
@@ -67,7 +65,7 @@ class LocationService {
         {
           accuracy: Location.Accuracy.High,
           timeInterval: interval,
-          distanceInterval: 10, // Update every 10 meters
+          distanceInterval: 0, // Update even without movement
         },
         (location) => {
           this.currentLocation = {
@@ -82,7 +80,6 @@ class LocationService {
       // Store the subscription object (not the Promise)
       this.watchSubscription = subscription;
     } catch (error) {
-      console.error('Error watching location:', error);
       callback(null);
     }
   }
@@ -103,13 +100,11 @@ class LocationService {
               subscription.remove();
             }
           }).catch((error) => {
-            console.error('Error removing location subscription:', error);
           });
         }
         this.watchSubscription = null;
       }
     } catch (error) {
-      console.error('Error stopping location watch:', error);
       this.watchSubscription = null;
     }
   }
@@ -123,4 +118,3 @@ class LocationService {
 }
 
 export default new LocationService();
-

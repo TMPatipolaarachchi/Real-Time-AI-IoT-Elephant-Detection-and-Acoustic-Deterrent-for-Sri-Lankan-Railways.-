@@ -143,7 +143,6 @@ export const AuthProvider = ({ children }) => {
       const profile = await authService.getUserProfile(user.uid);
       setUserProfile(profile);
     } catch (error) {
-      console.error('Error refreshing profile:', error);
     }
   };
 
@@ -171,4 +170,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
