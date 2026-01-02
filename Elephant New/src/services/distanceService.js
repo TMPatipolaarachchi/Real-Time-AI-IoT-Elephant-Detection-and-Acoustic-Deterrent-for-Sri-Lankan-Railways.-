@@ -1,4 +1,3 @@
-import { calculateDistance } from '../utils/haversine';
 import locationService from './locationService';
 import esp32Service from './esp32Service';
 import pillarService from './pillarService';
@@ -63,7 +62,6 @@ class DistanceService {
     locationService.getCurrentLocation().then((location) => {
       if (location) {
         this.trainLocation = location;
-        this.calculateDistance();
         this.calculatePillarDistances();
       }
     });
@@ -72,7 +70,6 @@ class DistanceService {
     locationService.watchLocation((location) => {
       if (location) {
         this.trainLocation = location;
-        this.calculateDistance();
         this.calculatePillarDistances();
       }
     }, 5000);
@@ -80,9 +77,8 @@ class DistanceService {
     // Also calculate on interval to ensure updates every 5 seconds
     this.calculationInterval = setInterval(() => {
       if (this.isActive && this.trainLocation) {
-        if (this.elephantLocation) {
-          this.calculateDistance();
-        }
+        // App-side straight-line distance calculation removed.
+        // Only use ESP32/pillar-based distances now.
         this.calculatePillarDistances();
       }
     }, 5000);
@@ -92,32 +88,10 @@ class DistanceService {
    * Calculate distance to elephant using Haversine formula
    */
   calculateDistance() {
-    if (!this.trainLocation || !this.elephantLocation) {
-      return;
-    }
-
-    const distance = calculateDistance(
-      this.trainLocation.latitude,
-      this.trainLocation.longitude,
-      this.elephantLocation.latitude,
-      this.elephantLocation.longitude
-    );
-
-    this.distance = distance;
+    // Local app straight-line distance calculation has been removed.
+    // Keep a placeholder for backward compatibility; distance will be null.
+    this.distance = null;
     this.notifyListeners();
-
-    // Stop calculation when distance reaches 0 (or very close to 0 - 0.1 meters)
-    // But keep the distance and location data for display
-    if (distance <= 0.0001) {
-      this.isActive = false;
-      locationService.stopWatching();
-      if (this.calculationInterval) {
-        clearInterval(this.calculationInterval);
-        this.calculationInterval = null;
-      }
-      // Keep distance and location data for display (don't clear them)
-      this.notifyListeners();
-    }
   }
 
   /**
@@ -259,6 +233,4 @@ class DistanceService {
   }
 }
 
-
 export default new DistanceService();
-

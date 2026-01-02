@@ -288,7 +288,7 @@ export default function DashboardScreen({ navigation }) {
     if (trackDistanceKm !== null && trackDistanceKm !== undefined) {
       if (trackDistanceKm < 1) return "critical";
       if (trackDistanceKm < 2) return "high";
-      if (trackDistanceKm < 5) return "medium";
+      if (trackDistanceKm < 7) return "medium";
       return "low";
     }
 

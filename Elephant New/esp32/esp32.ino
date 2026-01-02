@@ -10,7 +10,7 @@
 
 // WiFi credentials - CHANGE THESE
 const char* ssid = "Dialog 4G 442";
-const char* password = "7A7FECe3";
+const char* password = "4A6660AD";
 
 WebServer server(80);
 

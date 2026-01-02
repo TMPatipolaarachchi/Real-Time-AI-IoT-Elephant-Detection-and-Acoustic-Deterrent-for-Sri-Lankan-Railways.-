@@ -47,8 +47,10 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
   }
 
   // Elephant detected
-  const riskLevel = esp32Data.riskLevel || 'low';
-  const isCritical = distance !== null && distance < 1;
+  const riskLevel = esp32Data.riskLevel || 'high';
+  // Prefer ESP32 distance when available; fall back to legacy `distance` prop
+  const displayDistance = (esp32Data && esp32Data.distance !== undefined) ? esp32Data.distance : (distance !== undefined ? distance : null);
+  const isCritical = displayDistance !== null && displayDistance < 1;
   
   return (
     <View style={[styles.card, styles.alertCard, isCritical && styles.criticalCard]}>
@@ -69,11 +71,11 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
           </View>
         )}
         
-        {distance !== null && (
+        {/* {displayDistance !== null && (
           <View style={styles.distanceInfo}>
             <Text style={styles.distanceLabel}>Current Distance:</Text>
             <Text style={[styles.distanceValue, isCritical && styles.criticalDistanceValue]}>
-              {formatDistance(distance)}
+              {formatDistance(displayDistance)}
             </Text>
             {isCritical && (
               <Text style={styles.criticalWarning}>
@@ -81,7 +83,7 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
               </Text>
             )}
           </View>
-        )}
+        )} */}
         {esp32Data.elephantLocation && esp32Data.elephantLocation.latitude != null && esp32Data.elephantLocation.longitude != null && (
           <View style={styles.locationInfo}>
             <Text style={styles.locationLabel}>Detection Location:</Text>
@@ -268,4 +270,3 @@ const styles = StyleSheet.create({
     color: '#0D47A1',
     fontWeight: 'bold',
   },});
-
