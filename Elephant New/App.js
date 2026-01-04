@@ -9,7 +9,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CalibrationScreen from './src/screens/CalibrationScreen';
-import RiskScreen from'./src/screens/RiskScreen';
+
 import { AuthContext, AuthProvider } from './src/context/AuthContext';
 import { Audio } from "expo-av";
 
@@ -47,14 +47,8 @@ function MainTabs() {
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Risk" 
-        component={RiskScreen}
-        options={{
-          title: 'Risk Assessment',
-          tabBarLabel: 'Risk',
-        }}
-      />
+      
+      
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}

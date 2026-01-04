@@ -960,13 +960,13 @@ void handleGPS() {
     Serial.print(nearestWp->lat, 8);
     Serial.print(", ");
     Serial.println(nearestWp->lon, 8);
-    Serial.print("  Description: ");
-    Serial.println(nearestWp->description);
-    Serial.print("  Front: ");
-    Serial.print(nearestWp->front);
-    Serial.print("m, Back: ");
-    Serial.print(nearestWp->back);
-    Serial.println("m");
+    // Serial.print("  Description: ");
+    // Serial.println(nearestWp->description);
+    // Serial.print("  Front: ");
+    // Serial.print(nearestWp->front);
+    // Serial.print("m, Back: ");
+    // Serial.print(nearestWp->back);
+    // Serial.println("m");
     
     // Calculate Haversine distance from train to nearest waypoint
     double trainToWaypoint = calculateDistance(trainLat, trainLon, nearestWp->lat, nearestWp->lon);
