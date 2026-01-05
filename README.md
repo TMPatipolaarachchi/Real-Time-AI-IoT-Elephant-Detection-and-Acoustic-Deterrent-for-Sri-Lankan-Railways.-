@@ -1,5 +1,7 @@
 # Real-Time AI IoT — Elephant Detection & Acoustic Deterrent
 
+https://github.com/user-attachments/assets/98a37b5c-c701-4dd7-ace4-040888281d06
+
 ## Project Overview
 
 This repository implements a real-time elephant detection and acoustic deterrent system designed for Sri Lankan railways. The system uses trackside IoT devices to detect large-animal presence near railway tracks, notifies operators via a mobile dashboard, and can trigger deterrent audio to reduce collision risk.
