@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🐘🚆 Real-Time AI & IoT Elephant–Train Conflict Mitigation System for Sri Lankan Railways
 
 ## 📌 Introduction
@@ -163,11 +163,3 @@ This continuous feedback loop ensures timely decision-making and minimizes colli
 This project presents a comprehensive AI- and IoT-driven approach to mitigating elephant–train conflicts in Sri Lanka. By combining intelligent perception, behavior-aware decision-making, and real-time communication, the system aims to reduce elephant fatalities, enhance railway safety, and promote sustainable coexistence between wildlife and transportation infrastructure.
 
 ---
-
-## 🔗 GitHub Repository
-
-Project Repository:
-**Real-Time-AI-IoT-Elephant-Detection-and-Acoustic-Deterrent-for-Sri-Lankan-Railways**
-=======
-
->>>>>>> origin/development
