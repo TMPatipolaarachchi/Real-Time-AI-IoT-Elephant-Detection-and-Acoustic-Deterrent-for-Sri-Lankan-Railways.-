@@ -1,165 +1,113 @@
 
-# 🐘🚆 Real-Time AI & IoT Elephant–Train Conflict Mitigation System for Sri Lankan Railways
 
-## 📌 Introduction
+# 🐘🚆 Real-Time AI & IoT Elephant–Train Conflict Mitigation System
 
-Human–elephant conflict has long been a critical conservation and safety issue in Sri Lanka. In recent years, elephant–train collisions have emerged as one of the most severe forms of this conflict, particularly in railway zones where elephant migration routes intersect with active train lines. These incidents result in the loss of elephant lives, damage to railway infrastructure, train delays, and potential risks to passengers and railway personnel.
+**AI-Powered Solution to Reduce Elephant–Train Collisions in Sri Lanka**
 
-Existing mitigation strategies, such as manual patrols, fixed warning signs, and basic alert systems, have demonstrated limited effectiveness. Their shortcomings include restricted spatial coverage, delayed detection, lack of real-time intelligence, and an inability to adapt responses based on elephant behavior or train dynamics. As a result, timely and informed decision-making remains a significant challenge.
-
-To address these limitations, this research proposes a **real-time Artificial Intelligence (AI) and Internet of Things (IoT)-based system** designed specifically for elephant–train conflict mitigation in Sri Lanka. The proposed solution integrates computer vision, behavior analysis, acoustic deterrence, GPS-based train tracking, and mobile communication to enable proactive, context-aware responses that prioritize both elephant welfare and railway safety.
+Human–elephant conflicts along railway corridors are a critical conservation and safety issue. Elephant–train collisions lead to loss of elephant lives, train delays, infrastructure damage, and potential risks to passengers. This system combines **AI, IoT, and mobile technology** to provide **real-time detection, behavior analysis, risk assessment, and proactive driver alerts**.
 
 ---
 
-## 🧠 System Overview
+## ✨ Project Snapshot
 
-<img width="1417" height="1245" alt="system" src="https://github.com/user-attachments/assets/266546ad-58de-4cb8-ba6e-c52044f1acc5" />
-
-
-
-The proposed system continuously monitors elephant–train crossing zones using strategically installed camera units. The system operates in real time and consists of the following key functional components:
-
-1. **Elephant Detection and Classification**
-2. **Elephant Behavior (Posture and sound) Analysis**
-3. **Acoustic Deterrent Control (Bee Colony Sound Simulation)**
-4. **Train Tracking and Distance Estimation**
-5. **Risk Assessment and Driver Notification**
-
-Each component works collaboratively to assess risk and trigger appropriate mitigation actions.
+| Category          | Details                                                                    |
+| ----------------- | -------------------------------------------------------------------------- |
+| **User Roles**    | 🛤️ Train Driver · 🐘 Wildlife Conservationist                             |
+| **Platforms**     | 📱 React Native (Mobile App) · 🌐 Node.js / Express · 🧠 Python ML        |
+| **AI / ML**       | YOLO / CNN Object Detection · Elephant Behavior Analysis · Risk Prediction |
+| **External Data** | 📡 GPS Train Tracking · 🌦 Weather Data                                    |
+| **Storage**       | 🗄 firebase (users & logs) · Sensor & Detection Data                        |
 
 ---
 
-## 👁️ Elephant Detection and Classification
+## 🚶 User Journeys
 
-Camera-based computer vision is used to continuously monitor railway crossing zones. The AI model:
+### 🐘 Elephant Detection and Classification
 
-* Detects elephants and distinguishes them from other animals or objects.
-* Counts the number of detected elephants.
-* Classifies elephant presence into the following categories:
+* Real-time camera-based monitoring of railway zones
+* Detects elephants and differentiates them from other animals or objects
+* Counts elephants and classifies herd type:
 
-  * **Individual elephant**
-  * **Herd**
-  * **Three-part herd (adult–calf–adult)**
+  * Individual elephant
+  * Herd
+  * Three-part herd (adult–calf–adult)
 
-This classification is critical, as different herd structures require different mitigation strategies to avoid unintended or harmful outcomes.
+### 🧍 Elephant Behavior Analysis
 
----
+* Posture- and sound-based behavior classification:
 
-## 🧍 Elephant Behavior Analysis
+  * Normal
+  * Aggressive
+* Determines whether acoustic deterrents can be safely activated
 
-Beyond detection, the system performs **posture-based behavior analysis** to classify elephant behavior into:
+### 🔊 Acoustic Deterrent (Bee Colony Sound)
 
-* **Normal behavior**
-* **Aggressive behavior**
+* Bio-inspired deterrent based on elephant aversion to bees
+* Selectively activated based on elephant behavior and herd type
+* **Safety Rule:** Avoid activation for aggressive elephants or adult–calf–adult herds to prevent harm
 
-Behavior recognition is essential for assessing the potential risk of confrontation and determining whether deterrent actions should be activated.
+### 📡 Train Tracking & Distance Estimation
 
----
+* GPS-based train monitoring within 10 km of detection zones
+* ESP32 calculates distance between train and elephant
+* Real-time updates sent to the mobile application for driver awareness
 
-## 🔊 Acoustic Deterrent System (Bee Colony Sound)
+### ⚠️ Risk Assessment Module
 
-The system incorporates a bio-inspired acoustic deterrent mechanism based on elephant aversion to bees.
+* Considers: Elephant behavior, herd type, train distance & speed, weather conditions
+* Outputs **risk level** guiding alert severity and driver instructions
 
-* A sound system simulates the natural sound of an active bee colony.
-* The deterrent is **selectively activated** based on:
+### 📱 Driver Notification
 
-  * Elephant behavior (normal or aggressive)
-  * Elephant group classification
-
-### Safety Rule
-
-To avoid negative consequences, **the bee colony sound is NOT activated** when:
-
-* Elephants exhibit aggressive behavior **and**
-* Elephants are classified as a **three-part herd (adult–calf–adult)**
-
-This rule ensures the safety of calves and prevents escalation of aggressive responses.
+* **Within 10 km:** Continuous distance updates and risk alerts
+* **Within 1 km:** Emergency alerts if elephants remain on the track
+* **Track Clear:** Notification that normal train operation can resume
 
 ---
 
-## 📡 Train Tracking and Distance Estimation
+## 🗂 Repository Structure
 
-The system integrates GPS-based train tracking to identify trains operating near elephant detection zones.
-
-* Trains within a **10 km radius** of the elephant detection point are continuously monitored.
-  
-* After elephant detection:
-* The train GPS coordinates are collected
-* The distance between the train and the elephant location is calculated
-* This distance calculation is done using the ESP32
-* After calculation, the distance data is sent to the mobile application
-  
-This real-time spatial awareness allows the system to adapt responses dynamically as trains approach.
+```
+Elephant-Train-Conflict-System/
+├── ElephantDetection/        # Elephant detection & classification models
+├── elephant_behavior/        # Behavior analysis (pose & sound)
+├── distancecalculation/      # Train location & distance calculation
+├── Alert-system/             # Driver alert & notification logic
+├── Risk_Prediction/          # Risk assessment module
+└── README.md                 # Project documentation
+```
 
 ---
 
-## ⚠️ Risk Assessment Module
+## 🛠 Tech Stack
 
-When elephants are detected—especially in aggressive states or speed or weather —the system performs a comprehensive risk assessment using:
-
-* Elephant behavior (normal or aggressive)
-* Elephant group classification
-* Distance between the train and elephants
-* Speed of the approaching train
-* Weather
-
-The output is a **risk level** that guides alert severity and driver instructions.
-
----
-
-## 📱 Driver Notification and Mobile Application
-
-A dedicated mobile application is used to communicate real-time information to train drivers.
-
-### Notification Logic
-
-* **Within 10 km**:
-
-  * Drivers receive distance updates, assessed risk levels, and alerts.
-
-* **More than 1 km away**:
-
-  * Drivers are instructed to slow down and remain alert.
-  * Real-time monitoring continues to confirm elephant presence or movement.
-
-* **Within 1 km**:
-
-  * If elephants are still present on the track, an **emergency warning** is sent immediately.
-  * This accounts for insufficient time to rely solely on deterrent measures.
-
-* **Elephants have left the track**:
-
-  * Drivers are notified that the track is clear and normal operation may resume.
-
-This continuous feedback loop ensures timely decision-making and minimizes collision risk.
+* **Frontend:** React Native (Expo)
+* **Backend:** Node.js, Express, firebase
+* **AI / ML:** YOLO / CNN, Pose & Sound-based Behavior Analysis, Risk Prediction
+* **Hardware / IoT:** ESP32, Camera Units, GPS Modules, Acoustic Deterrent System
+* **APIs:** Open-Meteo (Weather), Train GPS Feeds
 
 ---
 
 ## ⭐ Key Contributions
 
-* Real-time AI-based elephant detection and behavior analysis
-* Context-aware acoustic deterrent activation
-* GPS-integrated train proximity monitoring
-* Dynamic risk assessment using multiple real-world parameters
-* Direct, actionable communication with train drivers via a mobile application
+1. Real-time AI-based elephant detection and behavior analysis
+2. Context-aware acoustic deterrent activation
+3. GPS-integrated train proximity monitoring
+4. Dynamic risk assessment using multiple real-world parameters
+5. Real-time communication with train drivers via mobile application
+6. Enhanced safety for elephants, trains, and passengers
 
 ---
 
-## 🗂️ Repository Structure (Overview)
+## 👨‍🎓 Contributors
 
-```
-├── ElephantDetection/          # Elephant detection and behavior analysis models
-├── elephent_behavior/          # elephent behavior using posed and sound
-├── distancecalculation/        # Train location and distance calculation modules
-├── Alert-system/               # Driver alert and notification system
-├── Risk_Prediction/            # Risk prediction 
-└── README.md                   # Project documentation
-```
+🎓 SLIIT – 4th Year IT Undergraduate Research Team
 
 ---
 
 ## 🧾 Conclusion
 
-This project presents a comprehensive AI- and IoT-driven approach to mitigating elephant–train conflicts in Sri Lanka. By combining intelligent perception, behavior-aware decision-making, and real-time communication, the system aims to reduce elephant fatalities, enhance railway safety, and promote sustainable coexistence between wildlife and transportation infrastructure.
+This project presents a **comprehensive AI- and IoT-driven solution** to mitigate elephant–train collisions in Sri Lanka. By combining **intelligent perception, behavior-aware decision-making, and real-time driver communication**, it promotes safe coexistence between wildlife and railway infrastructure while enhancing operational safety.
 
 ---
