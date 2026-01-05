@@ -94,13 +94,13 @@ This real-time spatial awareness allows the system to adapt responses dynamicall
 
 ## ⚠️ Risk Assessment Module
 
-When elephants are detected—especially in aggressive states or sensitive herd formations—the system performs a comprehensive risk assessment using:
+When elephants are detected—especially in aggressive states or speed or weather —the system performs a comprehensive risk assessment using:
 
 * Elephant behavior (normal or aggressive)
 * Elephant group classification
 * Distance between the train and elephants
 * Speed of the approaching train
-* Wheather
+* Weather
 
 The output is a **risk level** that guides alert severity and driver instructions.
 
