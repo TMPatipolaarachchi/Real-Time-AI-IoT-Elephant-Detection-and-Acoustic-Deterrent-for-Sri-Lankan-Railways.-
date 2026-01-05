@@ -12,6 +12,7 @@ import CalibrationScreen from './src/screens/CalibrationScreen';
 import FirstAlertsScreen from './src/screens/FirstAlertsScreen';
 import { AuthContext, AuthProvider } from './src/context/AuthContext';
 import { Audio } from "expo-av";
+import notificationSyncService from './src/services/notificationSyncService';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -69,6 +70,19 @@ function MainTabs() {
 
 function AppNavigator() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
+  React.useEffect(() => {
+    // Initialize sync listener when user is authenticated
+    if (isAuthenticated) {
+      notificationSyncService.initializeSyncListener();
+    } else {
+      notificationSyncService.destroy();
+    }
+
+    return () => {
+      // Cleanup on unmount
+      notificationSyncService.destroy();
+    };
+  }, [isAuthenticated]);
 
   React.useEffect(() => {
     Audio.setAudioModeAsync({

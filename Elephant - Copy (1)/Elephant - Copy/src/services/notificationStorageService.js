@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import notificationSyncService from './notificationSyncService';
 
 const PILLAR_NOTIFICATIONS_KEY = 'pillar_first_notifications';
 const ALL_NOTIFICATIONS_KEY = 'all_notifications_history';
@@ -55,6 +56,13 @@ class NotificationStorageService {
 
       // Also save to history
       await this.addToHistory(notificationData);
+
+      // Enqueue for cloud sync (will be synced when internet is available)
+      try {
+        await notificationSyncService.addToSyncQueue(notificationData);
+      } catch (syncError) {
+        console.warn('Failed to enqueue notification for sync:', syncError);
+      }
 
       return true;
     } catch (error) {

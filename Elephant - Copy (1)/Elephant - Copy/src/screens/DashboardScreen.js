@@ -427,13 +427,13 @@ const styles = StyleSheet.create({
   },
 
   userName: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#212121",
   },
 
   dateTime: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#757575",
   },
 
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "600",
   },
 

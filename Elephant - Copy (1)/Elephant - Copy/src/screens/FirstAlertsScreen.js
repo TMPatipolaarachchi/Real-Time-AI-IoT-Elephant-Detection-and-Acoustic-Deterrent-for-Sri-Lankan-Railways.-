@@ -140,12 +140,7 @@ export default function FirstAlertsScreen({ navigation }) {
             <Text style={styles.value}>{notification.trainNumber || 'N/A'}</Text>
           </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Location:</Text>
-            <Text style={styles.value}>
-              {notification.latitude?.toFixed(4)}, {notification.longitude?.toFixed(4)}
-            </Text>
-          </View>
+          
 
           {notification.distance && (
             <View style={styles.infoRow}>
@@ -162,12 +157,6 @@ export default function FirstAlertsScreen({ navigation }) {
           )}
         </View>
 
-        <TouchableOpacity
-          style={styles.clearButton}
-          onPress={() => handleClearNotification(pillarIdentifier, notification)}
-        >
-          <Text style={styles.clearButtonText}>Clear This Alert</Text>
-        </TouchableOpacity>
       </View>
     );
   };
