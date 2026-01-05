@@ -81,8 +81,9 @@ This rule ensures the safety of calves and prevents escalation of aggressive res
 The system integrates GPS-based train tracking to identify trains operating near elephant detection zones.
 
 * Trains within a **10 km radius** of the elephant detection point are continuously monitored.
+  
 * After elephant detection:
-*The train GPS coordinates are collected
+* The train GPS coordinates are collected
 * The distance between the train and the elephant location is calculated
 * This distance calculation is done using the ESP32
 * After calculation, the distance data is sent to the mobile application
