@@ -12,6 +12,10 @@ To address these limitations, this research proposes a **real-time Artificial In
 
 ## 🧠 System Overview
 
+<img width="1417" height="1245" alt="system" src="https://github.com/user-attachments/assets/266546ad-58de-4cb8-ba6e-c52044f1acc5" />
+
+
+
 The proposed system continuously monitors elephant–train crossing zones using strategically installed camera units. The system operates in real time and consists of the following key functional components:
 
 1. **Elephant Detection and Classification**
