@@ -816,17 +816,28 @@ void handleGPS() {
   
   // Check if any pillar has elephant detected
   int elephantPillarIdx = -1;
-  double minDistance = 999999999;
-  
-  for (int i = 0; i < pillarCount; i++) {
-    if (pillars[i].elephantDetected && pillars[i].active) {
-      double dist = calculateDistance(trainLat, trainLon, pillars[i].lat, pillars[i].lon);
-      if (dist < minDistance) {
-        minDistance = dist;
-        elephantPillarIdx = i;
-      }
+double minTrackDistance = 999999999;
+
+for (int i = 0; i < pillarCount; i++) {
+  if (pillars[i].elephantDetected && pillars[i].active) {
+
+    // 🔹 Calculate TRACK distance instead of straight distance
+    double trackDist = calculateTrackDistance(trainLat, trainLon, pillars[i].id);
+
+    // Safety fallback
+    if (trackDist <= 0) {
+      trackDist = calculateDistance(
+        trainLat, trainLon,
+        pillars[i].lat, pillars[i].lon
+      );
+    }
+
+    if (trackDist < minTrackDistance) {
+      minTrackDistance = trackDist;
+      elephantPillarIdx = i;
     }
   }
+}
   
   DynamicJsonDocument response(2048);
   response["status"] = "success";
@@ -960,13 +971,7 @@ void handleGPS() {
     Serial.print(nearestWp->lat, 8);
     Serial.print(", ");
     Serial.println(nearestWp->lon, 8);
-    // Serial.print("  Description: ");
-    // Serial.println(nearestWp->description);
-    // Serial.print("  Front: ");
-    // Serial.print(nearestWp->front);
-    // Serial.print("m, Back: ");
-    // Serial.print(nearestWp->back);
-    // Serial.println("m");
+    
     
     // Calculate Haversine distance from train to nearest waypoint
     double trainToWaypoint = calculateDistance(trainLat, trainLon, nearestWp->lat, nearestWp->lon);
