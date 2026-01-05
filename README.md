@@ -19,7 +19,7 @@ To address these limitations, this research proposes a **real-time Artificial In
 The proposed system continuously monitors elephant–train crossing zones using strategically installed camera units. The system operates in real time and consists of the following key functional components:
 
 1. **Elephant Detection and Classification**
-2. **Elephant Behavior (Posture) Analysis**
+2. **Elephant Behavior (Posture and sound) Analysis**
 3. **Acoustic Deterrent Control (Bee Colony Sound Simulation)**
 4. **Train Tracking and Distance Estimation**
 5. **Risk Assessment and Driver Notification**
