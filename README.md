@@ -8,6 +8,11 @@ Human–elephant conflicts along railway corridors are a critical conservation a
 
 ---
 
+## 🧠 System Overview
+
+<img width="1417" height="1245" alt="system" src="https://github.com/user-attachments/assets/266546ad-58de-4cb8-ba6e-c52044f1acc5" />
+
+
 ## ✨ Project Snapshot
 
 | Category          | Details                                                                    |
