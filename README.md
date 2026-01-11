@@ -144,6 +144,6 @@ Elephant-Train-Conflict-System/
 ## 🧾 Conclusion
 
 This project presents a **comprehensive AI- and IoT-enabled solution** to mitigate elephant–train collisions in Sri Lanka. By combining **intelligent perception, behavior-aware risk assessment, and real-time driver communication**, the system supports safer railway operations while promoting sustainable coexistence between wildlife and transportation infrastructure.
-```
+
 https://github.com/TMPatipolaarachchi/Real-Time-AI-IoT-Elephant-Detection-and-Acoustic-Deterrent-for-Sri-Lankan-Railways.-.git
 
