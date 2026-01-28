@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# iOS
+ios/Pods/
+ios/Podfile.lock
+*.ipa
+*.xcarchive
+DerivedData/
+
+# Android
+android/.gradle/
+android/local.properties
+android/build/
+*.apk
+*.aab
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Cache
+.cache/
+.eslintcache
+
+# Misc
+README.md
+*.pem
+.env.example
