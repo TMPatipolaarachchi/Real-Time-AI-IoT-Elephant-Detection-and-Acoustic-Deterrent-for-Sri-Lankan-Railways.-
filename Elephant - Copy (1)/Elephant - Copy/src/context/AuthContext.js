@@ -1,10 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
+import { isAdminEmail } from '../seed/adminSeed';
 
 export const AuthContext = createContext({
   user: null,
   userProfile: null,
   isAuthenticated: false,
+  isAdmin: false,
   isLoading: true,
   isOfflineMode: false,
   signIn: async () => {},
@@ -154,6 +156,7 @@ export const AuthProvider = ({ children }) => {
     user,
     userProfile,
     isAuthenticated: !!user,
+    isAdmin: !!user && isAdminEmail(user.email),
     isLoading,
     isOfflineMode,
     signIn,

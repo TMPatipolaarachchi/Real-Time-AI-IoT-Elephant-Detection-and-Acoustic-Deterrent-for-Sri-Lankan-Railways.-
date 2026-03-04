@@ -1,15 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { formatDistance } from '../utils/haversine';
+import {
+  COLORS, FONTS, SPACING, RADIUS, SHADOWS, moderateScale,
+} from '../theme';
 
 export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
   if (!esp32Data) {
     return (
       <View style={[styles.card, styles.noDataCard]}>
-        <Text style={styles.noDataText}>No detection data available</Text>
-        <Text style={styles.noDataSubtext}>
-          Waiting for ESP32 connection...
-        </Text>
+        <View style={[styles.iconCircle, { backgroundColor: COLORS.accent }]}>
+          <Ionicons name="radio-outline" size={moderateScale(24)} color={COLORS.textInverse} />
+        </View>
+        <View style={styles.cardBody}>
+          <Text style={styles.cardTitle}>No Detection Data</Text>
+          <Text style={styles.cardMessage}>Waiting for ESP32 connection...</Text>
+        </View>
       </View>
     );
   }
@@ -17,14 +24,12 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
   if (esp32Data.elephantLeft) {
     return (
       <View style={[styles.card, styles.safeCard]}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>✅</Text>
+        <View style={[styles.iconCircle, { backgroundColor: COLORS.success }]}>
+          <Ionicons name="checkmark-circle" size={moderateScale(24)} color={COLORS.textInverse} />
         </View>
-        <View style={styles.content}>
-          <Text style={styles.title}>All Clear</Text>
-          <Text style={styles.message}>
-            The elephant has left the area. No risk detected.
-          </Text>
+        <View style={styles.cardBody}>
+          <Text style={[styles.cardTitle, { color: COLORS.success }]}>All Clear</Text>
+          <Text style={styles.cardMessage}>The elephant has left the area. No risk detected.</Text>
         </View>
       </View>
     );
@@ -33,70 +38,53 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
   if (!esp32Data.elephantDetected) {
     return (
       <View style={[styles.card, styles.safeCard]}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>👁</Text>
+        <View style={[styles.iconCircle, { backgroundColor: COLORS.primary }]}>
+          <Ionicons name="eye" size={moderateScale(24)} color={COLORS.textInverse} />
         </View>
-        <View style={styles.content}>
-          <Text style={styles.title}>Monitoring Active</Text>
-          <Text style={styles.message}>
-            System is actively monitoring for elephant presence.
-          </Text>
+        <View style={styles.cardBody}>
+          <Text style={[styles.cardTitle, { color: COLORS.primary }]}>Monitoring Active</Text>
+          <Text style={styles.cardMessage}>System is actively monitoring for elephant presence.</Text>
         </View>
       </View>
     );
   }
 
   // Elephant detected
-  const riskLevel = esp32Data.riskLevel || 'high';
-  // Prefer ESP32 distance when available; fall back to legacy distance prop
   const displayDistance = (esp32Data && esp32Data.distance !== undefined) ? esp32Data.distance : (distance !== undefined ? distance : null);
   const isCritical = displayDistance !== null && displayDistance < 1;
-  
+
   return (
     <View style={[styles.card, styles.alertCard, isCritical && styles.criticalCard]}>
-      <View style={styles.iconContainer}>
-        <Text style={styles.icon}>🐘</Text>
+      <View style={[styles.iconCircle, { backgroundColor: isCritical ? COLORS.danger : COLORS.warning }]}>
+        <Ionicons name="alert-circle" size={moderateScale(24)} color={COLORS.textInverse} />
       </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>Elephant Detected!</Text>
-        <Text style={styles.message}>
-          An elephant has been detected in the area. Please proceed with caution.
-        </Text>
-        
-        {/* Elephant Pillar Location */}
+      <View style={styles.cardBody}>
+        <Text style={[styles.cardTitle, { color: COLORS.danger }]}>Elephant Detected!</Text>
+        <Text style={styles.cardMessage}>An elephant has been detected in the area. Please proceed with caution.</Text>
+
         {elephantPillarName && (
-          <View style={styles.pillarLocationBox}>
-            <Text style={styles.pillarLocationLabel}>📍 Detected At:</Text>
-            <Text style={styles.pillarLocationValue}>{elephantPillarName}</Text>
+          <View style={styles.pillarBox}>
+            <View style={styles.pillarRow}>
+              <Ionicons name="location" size={moderateScale(16)} color={COLORS.info} />
+              <Text style={styles.pillarLabel}>Detected At</Text>
+            </View>
+            <Text style={styles.pillarValue}>{elephantPillarName}</Text>
           </View>
         )}
-        
-        {/* {displayDistance !== null && (
-          <View style={styles.distanceInfo}>
-            <Text style={styles.distanceLabel}>Current Distance:</Text>
-            <Text style={[styles.distanceValue, isCritical && styles.criticalDistanceValue]}>
-              {formatDistance(displayDistance)}
-            </Text>
-            {isCritical && (
-              <Text style={styles.criticalWarning}>
-                ⚠ CRITICAL: Less than 1 km - Emergency braking recommended!
-              </Text>
-            )}
-          </View>
-        )} */}
+
         {esp32Data.elephantLocation && esp32Data.elephantLocation.latitude != null && esp32Data.elephantLocation.longitude != null && (
-          <View style={styles.locationInfo}>
-            <Text style={styles.locationLabel}>Detection Location:</Text>
-            <Text style={styles.locationValue}>
-              {Number(esp32Data.elephantLocation.latitude).toFixed(6)},{' '}
-              {Number(esp32Data.elephantLocation.longitude).toFixed(6)}
+          <View style={styles.metaRow}>
+            <Ionicons name="navigate-outline" size={moderateScale(13)} color={COLORS.textTertiary} />
+            <Text style={styles.metaText}>
+              {Number(esp32Data.elephantLocation.latitude).toFixed(6)}, {Number(esp32Data.elephantLocation.longitude).toFixed(6)}
             </Text>
           </View>
         )}
+
         {(esp32Data.elephantLocation?.detectedAt || esp32Data.timestamp) && (
-          <View style={styles.timestampInfo}>
-            <Text style={styles.timestampLabel}>Detection Time:</Text>
-            <Text style={styles.timestampValue}>
+          <View style={styles.metaRow}>
+            <Ionicons name="time-outline" size={moderateScale(13)} color={COLORS.textTertiary} />
+            <Text style={styles.metaText}>
               {esp32Data.elephantLocation?.detectedAt || new Date(esp32Data.timestamp).toLocaleString()}
             </Text>
           </View>
@@ -108,165 +96,35 @@ export default function AlertCard({ esp32Data, distance, elephantPillarName }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.base,
     flexDirection: 'row',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    ...SHADOWS.md,
   },
-  alertCard: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#F44336',
+  alertCard: { borderLeftWidth: 4, borderLeftColor: COLORS.danger },
+  safeCard: { borderLeftWidth: 4, borderLeftColor: COLORS.success },
+  noDataCard: { borderLeftWidth: 4, borderLeftColor: COLORS.accent },
+  criticalCard: { borderLeftColor: COLORS.danger, backgroundColor: COLORS.dangerSurface },
+  iconCircle: {
+    width: moderateScale(48), height: moderateScale(48), borderRadius: moderateScale(24),
+    justifyContent: 'center', alignItems: 'center', marginRight: SPACING.base, flexShrink: 0,
   },
-  safeCard: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#4CAF50',
+  cardBody: { flex: 1 },
+  cardTitle: {
+    fontSize: moderateScale(18), fontWeight: '700', color: COLORS.text,
+    marginBottom: SPACING.xs, letterSpacing: 0.2,
   },
-  noDataCard: {
-    borderLeftWidth: 5,
-    borderLeftColor: '#FF9800',
+  cardMessage: { ...FONTS.body, marginBottom: SPACING.md },
+  pillarBox: {
+    backgroundColor: COLORS.infoSurface, borderRadius: RADIUS.md,
+    padding: SPACING.md, marginBottom: SPACING.sm,
+    borderLeftWidth: 3, borderLeftColor: COLORS.info,
   },
-  iconContainer: {
-    marginRight: 16,
-    justifyContent: 'center',
-  },
-  icon: {
-    fontSize: 48,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 8,
-  },
-  message: {
-    fontSize: 14,
-    color: '#757575',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  distanceInfo: {
-    backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  distanceLabel: {
-    fontSize: 12,
-    color: '#757575',
-    marginBottom: 4,
-  },
-  distanceValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E7D32',
-  },
-  locationInfo: {
-    marginTop: 8,
-  },
-  locationLabel: {
-    fontSize: 12,
-    color: '#757575',
-    marginBottom: 4,
-  },
-  locationValue: {
-    fontSize: 12,
-    color: '#424242',
-    fontFamily: 'monospace',
-  },
-  noDataText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#757575',
-    textAlign: 'center',
-  },
-  noDataSubtext: {
-    fontSize: 14,
-    color: '#9E9E9E',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  criticalCard: {
-    borderLeftColor: '#F44336',
-    backgroundColor: '#FFEBEE',
-  },
-  riskInfo: {
-    backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  riskLabel: {
-    fontSize: 12,
-    color: '#757575',
-  },
-  riskValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  riskLow: {
-    color: '#4CAF50',
-    backgroundColor: '#E8F5E9',
-  },
-  riskMedium: {
-    color: '#FF9800',
-    backgroundColor: '#FFF8E1',
-  },
-  riskHigh: {
-    color: '#FF5722',
-    backgroundColor: '#FFF3E0',
-  },
-  criticalDistanceValue: {
-    color: '#F44336',
-    fontSize: 20,
-  },
-  criticalWarning: {
-    fontSize: 12,
-    color: '#F44336',
-    fontWeight: 'bold',
-    marginTop: 8,
-  },
-  timestampInfo: {
-    marginTop: 8,
-  },
-  timestampLabel: {
-    fontSize: 12,
-    color: '#757575',
-    marginBottom: 4,
-  },
-  timestampValue: {
-    fontSize: 12,
-    color: '#424242',
-  },  pillarLocationBox: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
-  },
-  pillarLocationLabel: {
-    fontSize: 13,
-    color: '#1976D2',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  pillarLocationValue: {
-    fontSize: 18,
-    color: '#0D47A1',
-    fontWeight: 'bold',
-  },});
+  pillarRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: SPACING.xs },
+  pillarLabel: { ...FONTS.caption, color: COLORS.info, fontWeight: '600' },
+  pillarValue: { fontSize: moderateScale(17), fontWeight: '700', color: COLORS.text, marginLeft: SPACING.xl },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginTop: SPACING.xs },
+  metaText: { ...FONTS.caption, color: COLORS.textTertiary },
+});

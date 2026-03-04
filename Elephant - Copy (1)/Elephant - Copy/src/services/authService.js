@@ -9,6 +9,7 @@ import {
 import { auth } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Buffer } from 'buffer';
+import { isAdminEmail } from '../seed/adminSeed';
 
 const OFFLINE_AUTH_KEY = '@offline_auth_data';
 const USER_PROFILE_KEY = '@user_profile';
@@ -341,6 +342,25 @@ class AuthService {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Check if the given email belongs to an admin user
+   * @param {string} email - The email to check
+   * @returns {boolean} - True if the user is an admin
+   */
+  isAdmin(email) {
+    return isAdminEmail(email);
+  }
+
+  /**
+   * Check if the currently logged-in user is an admin
+   * @returns {boolean}
+   */
+  isCurrentUserAdmin() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return false;
+    return isAdminEmail(currentUser.email);
   }
 }
 

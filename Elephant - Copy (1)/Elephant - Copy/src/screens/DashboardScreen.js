@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import AlertCard from '../components/AlertCard';
 import DistancePanel from '../components/DistancePanel';
@@ -23,6 +24,9 @@ import calibrationService from '../services/CalibrationService ';
 import authService from '../services/authService';
 import notificationStorageService from '../services/notificationStorageService';
 import { AuthContext } from '../context/AuthContext';
+import {
+  COLORS, FONTS, SPACING, RADIUS, SHADOWS, COMMON, moderateScale, SCREEN,
+} from '../theme';
 
 export default function DashboardScreen({ navigation }) {
   const [esp32Data, setEsp32Data] = useState(null);
@@ -321,46 +325,53 @@ export default function DashboardScreen({ navigation }) {
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
         }
+        showsVerticalScrollIndicator={false}
       >
         {/* Calibration Banner */}
         {isCalibrationActive && (
           <View style={styles.calibrationBanner}>
-            <Text style={styles.calibrationText}>🔧 Calibration in Progress</Text>
-            <Text style={styles.calibrationSubtext}>Other processes temporarily paused</Text>
+            <Ionicons name="construct" size={moderateScale(18)} color={COLORS.textInverse} />
+            <View style={{ marginLeft: SPACING.sm }}>
+              <Text style={styles.calibrationText}>Calibration in Progress</Text>
+              <Text style={styles.calibrationSubtext}>Other processes temporarily paused</Text>
+            </View>
           </View>
         )}
 
-        {/* Header Section */}
+        {/* Header Card */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.userName}>Hello, {userName}</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.greeting}>Hello,</Text>
+            <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.dateTime}>
-              {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
+              {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </View>
-
-          <View
-            style={[
-              styles.statusIndicator,
-              gpsEnabled ? styles.statusActive : null,
-            ]}
-          >
-            <Text style={styles.statusText}>
-              GPS {gpsEnabled ? "Active" : "Inactive"}
+          <View style={[styles.gpsBadge, gpsEnabled && styles.gpsBadgeActive]}>
+            <Ionicons
+              name={gpsEnabled ? "location" : "location-outline"}
+              size={moderateScale(14)}
+              color={gpsEnabled ? COLORS.textInverse : COLORS.textTertiary}
+            />
+            <Text style={[styles.gpsText, gpsEnabled && styles.gpsTextActive]}>
+              {gpsEnabled ? "GPS Active" : "GPS Off"}
             </Text>
           </View>
         </View>
 
-        {/* Risk Box */}
+        {/* Risk Indicator */}
         {riskLevel && <RiskIndicator riskLevel={riskLevel} />}
 
-        {/* ESP32 Loading Message */}
+        {/* ESP32 Loading */}
         {esp32Loading && (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>⏳ Connecting to ESP32...</Text>
-            <Text style={styles.loadingSubtext}>Waiting for response</Text>
+          <View style={styles.loadingCard}>
+            <Ionicons name="radio-outline" size={moderateScale(24)} color={COLORS.info} />
+            <View style={{ marginLeft: SPACING.md }}>
+              <Text style={styles.loadingTitle}>Connecting to ESP32...</Text>
+              <Text style={styles.loadingSubtext}>Waiting for response</Text>
+            </View>
           </View>
         )}
 
@@ -379,28 +390,29 @@ export default function DashboardScreen({ navigation }) {
           />
         )}
 
-        {/* Alerts */}
+        {/* Alert Card */}
         {!esp32Loading && (
           <AlertCard esp32Data={esp32Data} distance={distance} elephantPillarName={elephantPillarName} />
         )}
 
-        {/* System Information */}
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>System Information</Text>
+        {/* System Info */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <Ionicons name="information-circle-outline" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.infoTitle}>System Information</Text>
+          </View>
+          <View style={styles.infoDivider} />
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Last Update:</Text>
-            <Text style={styles.infoValue}>
-              {currentTime.toLocaleTimeString()}
-            </Text>
+            <Text style={styles.infoLabel}>Last Update</Text>
+            <Text style={styles.infoValue}>{currentTime.toLocaleTimeString()}</Text>
           </View>
 
           {trainLocation && trainLocation.latitude != null && trainLocation.longitude != null && (
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Train Location:</Text>
-              <Text style={styles.infoValue}>
-                {Number(trainLocation.latitude).toFixed(6)},{" "}
-                {Number(trainLocation.longitude).toFixed(6)}
+              <Text style={styles.infoLabel}>Train Location</Text>
+              <Text style={styles.infoValueMono}>
+                {Number(trainLocation.latitude).toFixed(6)}, {Number(trainLocation.longitude).toFixed(6)}
               </Text>
             </View>
           )}
@@ -410,231 +422,57 @@ export default function DashboardScreen({ navigation }) {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
   scrollView: { flex: 1 },
-  contentContainer: { padding: 16 },
+  contentContainer: { padding: SPACING.base, paddingBottom: SPACING['2xl'] },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  userName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#212121",
-  },
-
-  dateTime: {
-    fontSize: 16,
-    color: "#757575",
-  },
-
-  statusIndicator: {
-    backgroundColor: "#F44336",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-
-  statusActive: {
-    backgroundColor: "#4CAF50",
-  },
-
-  statusText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  infoSection: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    elevation: 2,
-  },
-
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#212121",
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-
-  infoLabel: {
-    fontSize: 14,
-    color: "#757575",
-  },
-
-  infoValue: {
-    fontSize: 14,
-    color: "#212121",
-    fontWeight: "500",
-  },
-
-  // Calibration Banner Styles
+  // Calibration Banner
   calibrationBanner: {
-    backgroundColor: "#FF9800",
-    padding: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.accent, padding: SPACING.base,
+    borderRadius: RADIUS.lg, marginBottom: SPACING.base,
+    ...SHADOWS.colored(COLORS.accent),
   },
+  calibrationText: { color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: '700' },
+  calibrationSubtext: { color: 'rgba(255,255,255,0.8)', fontSize: moderateScale(11), marginTop: 2 },
 
-  calibrationText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 4,
+  // Header
+  header: {
+    ...COMMON.card, flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: SPACING.base,
   },
+  headerLeft: { flex: 1 },
+  greeting: { ...FONTS.body, color: COLORS.textTertiary },
+  userName: { fontSize: moderateScale(22), fontWeight: '800', color: COLORS.primary, letterSpacing: -0.3 },
+  dateTime: { ...FONTS.caption, marginTop: SPACING.xs },
+  gpsBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
+    backgroundColor: COLORS.background, paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm, borderRadius: RADIUS.full,
+    borderWidth: 1, borderColor: COLORS.border,
+  },
+  gpsBadgeActive: { backgroundColor: COLORS.success, borderColor: COLORS.success },
+  gpsText: { fontSize: moderateScale(12), fontWeight: '600', color: COLORS.textTertiary },
+  gpsTextActive: { color: COLORS.textInverse },
 
-  calibrationSubtext: {
-    color: "white",
-    fontSize: 12,
-    opacity: 0.9,
+  // Loading Card
+  loadingCard: {
+    ...COMMON.card, flexDirection: 'row', alignItems: 'center',
+    marginBottom: SPACING.base, borderWidth: 1.5, borderColor: COLORS.infoLight,
   },
+  loadingTitle: { fontSize: moderateScale(15), fontWeight: '600', color: COLORS.info },
+  loadingSubtext: { ...FONTS.caption, fontStyle: 'italic', marginTop: 2 },
 
-  // ESP32 Status Section
-  esp32Section: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
+  // Info Card
+  infoCard: {
+    ...COMMON.card, marginTop: SPACING.sm,
   },
-
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#212121",
-  },
-
-  esp32Card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 16,
-  },
-
-  esp32Row: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-
-  esp32Item: {
-    alignItems: "center",
-    flex: 1,
-  },
-
-  esp32Value: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#2196F3",
-    marginBottom: 4,
-  },
-
-  esp32Label: {
-    fontSize: 12,
-    color: "#757575",
-    textAlign: "center",
-  },
-
-  esp32Divider: {
-    width: 1,
-    height: 40,
-    backgroundColor: "#e0e0e0",
-  },
-
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-
-  statusOnline: {
-    backgroundColor: "#4CAF50",
-  },
-
-  statusOffline: {
-    backgroundColor: "#9E9E9E",
-  },
-
-  statusBadgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  trainLocationBox: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-
-  trainLocationLabel: {
-    fontSize: 12,
-    color: "#757575",
-    marginBottom: 4,
-  },
-
-  trainLocationValue: {
-    fontSize: 14,
-    color: "#212121",
-    fontWeight: "500",
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-  },
-
-  // Loading Container Styles
-  loadingContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
-    elevation: 2,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#2196F3",
-    borderStyle: "dashed",
-  },
-
-  loadingText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2196F3",
-    marginBottom: 8,
-  },
-
-  loadingSubtext: {
-    fontSize: 14,
-    color: "#757575",
-    fontStyle: "italic",
-  },
+  infoHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md },
+  infoTitle: { ...FONTS.h4, color: COLORS.primary },
+  infoDivider: { height: 1, backgroundColor: COLORS.divider, marginBottom: SPACING.md },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  infoLabel: { ...FONTS.body, color: COLORS.textTertiary },
+  infoValue: { ...FONTS.bodyBold, color: COLORS.text },
+  infoValueMono: { ...FONTS.mono, fontSize: moderateScale(12) },
 });

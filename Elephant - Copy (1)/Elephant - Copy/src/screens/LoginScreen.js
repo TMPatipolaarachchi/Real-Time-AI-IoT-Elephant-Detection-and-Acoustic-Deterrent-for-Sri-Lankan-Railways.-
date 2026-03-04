@@ -11,7 +11,12 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
+import {
+  COLORS, FONTS, SPACING, RADIUS, SHADOWS, COMMON,
+  moderateScale, SCREEN,
+} from '../theme';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,223 +26,132 @@ export default function LoginScreen() {
   const [displayName, setDisplayName] = useState('');
   const [trainNumber, setTrainNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const [secureEntry, setSecureEntry] = useState(true);
   const { signIn, signUp, isOfflineMode } = useContext(AuthContext);
 
   const handleSignIn = async () => {
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email');
-      return;
-    }
-
-    if (!password) {
-      Alert.alert('Error', 'Please enter your password');
-      return;
-    }
-
+    if (!email.trim()) { Alert.alert('Error', 'Please enter your email'); return; }
+    if (!password) { Alert.alert('Error', 'Please enter your password'); return; }
     setLoading(true);
     try {
       const result = await signIn(email.trim(), password);
-      
       if (!result.success) {
         Alert.alert('Sign In Failed', result.error);
       } else if (result.isOffline) {
-        Alert.alert(
-          'Offline Mode',
-          'You are signed in using cached credentials. Some features may be limited.',
-          [{ text: 'OK' }]
-        );
+        Alert.alert('Offline Mode', 'Signed in using cached credentials. Some features may be limited.', [{ text: 'OK' }]);
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
       console.error('Sign in error:', error);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleSignUp = async () => {
-    if (!displayName.trim()) {
-      Alert.alert('Error', 'Please enter your name');
-      return;
-    }
-
-    if (!trainNumber.trim()) {
-      Alert.alert('Error', 'Please enter your train registration number');
-      return;
-    }
-
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
+    if (!displayName.trim()) { Alert.alert('Error', 'Please enter your name'); return; }
+    if (!trainNumber.trim()) { Alert.alert('Error', 'Please enter your train registration number'); return; }
+    if (!email.trim()) { Alert.alert('Error', 'Please enter your email'); return; }
+    if (password.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
+    if (password !== confirmPassword) { Alert.alert('Error', 'Passwords do not match'); return; }
     setLoading(true);
     try {
       const result = await signUp(email.trim(), password, displayName.trim(), trainNumber.trim());
-      
       if (!result.success) {
         Alert.alert('Registration Failed', result.error);
       } else {
-        Alert.alert(
-          'Success',
-          'Account created successfully! You can now use the app offline.',
-          [{ text: 'OK' }]
-        );
+        Alert.alert('Success', 'Account created successfully! You can now use the app offline.', [{ text: 'OK' }]);
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
       console.error('Sign up error:', error);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setDisplayName('');
-    setTrainNumber('');
+    setEmail(''); setPassword(''); setConfirmPassword('');
+    setDisplayName(''); setTrainNumber('');
   };
 
+  const renderInput = (icon, placeholder, value, onChangeText, options = {}) => (
+    <View style={styles.inputWrapper}>
+      <View style={styles.inputIconBox}>
+        <Ionicons name={icon} size={moderateScale(18)} color={COLORS.primary} />
+      </View>
+      <TextInput
+        style={styles.input}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.textTertiary}
+        value={value}
+        onChangeText={onChangeText}
+        editable={!loading}
+        {...options}
+      />
+      {options.secureTextEntry !== undefined && (
+        <TouchableOpacity onPress={() => setSecureEntry(!secureEntry)} style={styles.eyeButton}>
+          <Ionicons name={secureEntry ? 'eye-off-outline' : 'eye-outline'} size={moderateScale(18)} color={COLORS.textTertiary} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.content}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={styles.topSection}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>🐘</Text>
+            <View style={styles.logoOuter}>
+              <View style={styles.logoInner}>
+                <Ionicons name="shield-checkmark" size={moderateScale(40)} color={COLORS.textInverse} />
+              </View>
             </View>
-            <Text style={styles.title}>Elephant Detection</Text>
-            <Text style={styles.subtitle}>Train Driver System</Text>
-            {isOfflineMode && (
-              <View style={styles.offlineBadge}>
-                <Text style={styles.offlineText}>📡 Offline Mode</Text>
+            <Text style={styles.appName}>ElephantGuard</Text>
+            <Text style={styles.tagline}>Railway Safety System</Text>
+          </View>
+          {isOfflineMode && (
+            <View style={styles.offlineBadge}>
+              <Ionicons name="cloud-offline-outline" size={moderateScale(14)} color={COLORS.textInverse} />
+              <Text style={styles.offlineText}>Offline Mode</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.formCard}>
+          <Text style={styles.formTitle}>{isSignUp ? 'Create Account' : 'Welcome Back'}</Text>
+          <Text style={styles.formSubtitle}>{isSignUp ? 'Register to get started with the safety system' : 'Sign in to continue monitoring'}</Text>
+
+          {isSignUp && (
+            <>
+              {renderInput('person-outline', 'Full Name', displayName, setDisplayName, { autoCapitalize: 'words' })}
+              {renderInput('train-outline', 'Train Registration (e.g., TR-1234)', trainNumber, setTrainNumber, { autoCapitalize: 'characters' })}
+            </>
+          )}
+          {renderInput('mail-outline', 'Email Address', email, setEmail, { autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' })}
+          {renderInput('lock-closed-outline', 'Password', password, setPassword, { secureTextEntry: secureEntry })}
+          {isSignUp && renderInput('lock-closed-outline', 'Confirm Password', confirmPassword, setConfirmPassword, { secureTextEntry: true })}
+
+          <TouchableOpacity style={[styles.submitButton, loading && styles.submitButtonDisabled]} onPress={isSignUp ? handleSignUp : handleSignIn} disabled={loading} activeOpacity={0.8}>
+            {loading ? <ActivityIndicator color={COLORS.textInverse} /> : (
+              <View style={styles.submitButtonContent}>
+                <Text style={styles.submitButtonText}>{isSignUp ? 'Create Account' : 'Sign In'}</Text>
+                <Ionicons name="arrow-forward" size={moderateScale(18)} color={COLORS.textInverse} />
               </View>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.formContainer}>
-            {isSignUp && (
-              <>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Full Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your full name"
-                    value={displayName}
-                    onChangeText={setDisplayName}
-                    autoCapitalize="words"
-                    editable={!loading}
-                  />
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Train Registration Number</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="e.g., TR-1234 or 1234"
-                    value={trainNumber}
-                    onChangeText={setTrainNumber}
-                    autoCapitalize="characters"
-                    editable={!loading}
-                  />
-                </View>
-              </>
-            )}
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                editable={!loading}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                editable={!loading}
-              />
-            </View>
-
-            {isSignUp && (
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Confirm Password</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  editable={!loading}
-                />
-              </View>
-            )}
-
-            <TouchableOpacity 
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
-              onPress={isSignUp ? handleSignUp : handleSignIn}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text style={styles.loginButtonText}>
-                  {isSignUp ? 'Sign Up' : 'Sign In'}
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.toggleButton} 
-              onPress={toggleMode}
-              disabled={loading}
-            >
-              <Text style={styles.toggleButtonText}>
-                {isSignUp 
-                  ? 'Already have an account? Sign In' 
-                  : "Don't have an account? Sign Up"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              🔒 Secure authentication with offline support
+          <TouchableOpacity style={styles.toggleButton} onPress={toggleMode} disabled={loading}>
+            <Text style={styles.toggleText}>
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              <Text style={styles.toggleTextBold}>{isSignUp ? 'Sign In' : 'Sign Up'}</Text>
             </Text>
-            <Text style={styles.footerSubtext}>
-              Sign up once with internet, then use offline
-            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <View style={styles.footerRow}>
+            <Ionicons name="lock-closed" size={moderateScale(12)} color={COLORS.textTertiary} />
+            <Text style={styles.footerText}>Secured with end-to-end encryption</Text>
           </View>
+          <Text style={styles.footerSub}>Sign up once online, then use anywhere offline</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -245,126 +159,67 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 20,
-  },
-  logoContainer: {
+  container: { flex: 1, backgroundColor: COLORS.primaryDark },
+  scrollContent: { flexGrow: 1 },
+  topSection: {
+    paddingTop: Platform.OS === 'ios' ? SPACING['4xl'] : SPACING['3xl'],
+    paddingBottom: SPACING['2xl'],
     alignItems: 'center',
-    marginBottom: 40,
   },
-  logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#2E7D32',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  logoContainer: { alignItems: 'center' },
+  logoOuter: {
+    width: moderateScale(90), height: moderateScale(90), borderRadius: moderateScale(45),
+    backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center',
+    marginBottom: SPACING.base,
   },
-  logoText: {
-    fontSize: 50,
+  logoInner: {
+    width: moderateScale(68), height: moderateScale(68), borderRadius: moderateScale(34),
+    backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center',
+    ...SHADOWS.colored(COLORS.primary),
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#757575',
-  },
+  appName: { fontSize: moderateScale(28), fontWeight: '800', color: COLORS.textInverse, letterSpacing: -0.5, marginBottom: SPACING.xs },
+  tagline: { fontSize: moderateScale(14), color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
   offlineBadge: {
-    marginTop: 10,
-    backgroundColor: '#FF9800',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.accent,
+    paddingHorizontal: SPACING.base, paddingVertical: SPACING.sm, borderRadius: RADIUS.full,
+    marginTop: SPACING.md, gap: SPACING.xs,
   },
-  offlineText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
+  offlineText: { color: COLORS.textInverse, fontSize: moderateScale(12), fontWeight: '700' },
+  formCard: {
+    flex: 1, backgroundColor: COLORS.surface,
+    borderTopLeftRadius: RADIUS['2xl'], borderTopRightRadius: RADIUS['2xl'],
+    paddingHorizontal: SPACING.xl, paddingTop: SPACING['2xl'], paddingBottom: SPACING.lg,
   },
-  formContainer: {
-    width: '100%',
+  formTitle: { ...FONTS.h1, color: COLORS.text, marginBottom: SPACING.xs },
+  formSubtitle: { ...FONTS.body, color: COLORS.textTertiary, marginBottom: SPACING.xl },
+  inputWrapper: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background,
+    borderRadius: RADIUS.lg, borderWidth: 1.5, borderColor: COLORS.border,
+    marginBottom: SPACING.md, overflow: 'hidden',
   },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#424242',
-    marginBottom: 8,
-  },
+  inputIconBox: { width: moderateScale(44), alignItems: 'center', justifyContent: 'center' },
   input: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    flex: 1, paddingVertical: Platform.OS === 'ios' ? SPACING.base : SPACING.md,
+    paddingRight: SPACING.base, fontSize: moderateScale(15), color: COLORS.text,
   },
-  loginButton: {
-    backgroundColor: '#2E7D32',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 10,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  eyeButton: { paddingHorizontal: SPACING.md, paddingVertical: SPACING.md },
+  submitButton: {
+    backgroundColor: COLORS.primary, borderRadius: RADIUS.lg,
+    paddingVertical: SPACING.base, marginTop: SPACING.sm,
+    ...SHADOWS.colored(COLORS.primary),
   },
-  loginButtonDisabled: {
-    backgroundColor: '#81C784',
-  },
-  loginButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  toggleButton: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  toggleButtonText: {
-    color: '#2E7D32',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  submitButtonDisabled: { backgroundColor: COLORS.primaryLight, opacity: 0.7 },
+  submitButtonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.sm },
+  submitButtonText: { color: COLORS.textInverse, fontSize: moderateScale(16), fontWeight: '700', letterSpacing: 0.3 },
+  toggleButton: { marginTop: SPACING.lg, alignItems: 'center', paddingVertical: SPACING.sm },
+  toggleText: { fontSize: moderateScale(14), color: COLORS.textSecondary },
+  toggleTextBold: { color: COLORS.primary, fontWeight: '700' },
   footer: {
-    marginTop: 30,
-    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    paddingBottom: Platform.OS === 'ios' ? SPACING['3xl'] : SPACING.xl,
+    paddingHorizontal: SPACING.xl, alignItems: 'center',
   },
-  footerText: {
-    fontSize: 12,
-    color: '#2E7D32',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  footerSubtext: {
-    fontSize: 11,
-    color: '#9E9E9E',
-    textAlign: 'center',
-    marginTop: 4,
-  },
+  footerRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: SPACING.xs },
+  footerText: { fontSize: moderateScale(12), color: COLORS.textTertiary, fontWeight: '500' },
+  footerSub: { fontSize: moderateScale(11), color: COLORS.textTertiary },
 });

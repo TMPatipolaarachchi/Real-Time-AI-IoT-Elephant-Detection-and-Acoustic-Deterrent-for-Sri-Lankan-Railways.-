@@ -12,10 +12,14 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import pillarService from '../services/PillarService ';
 import locationService from '../services/locationService';
 import calibrationService from '../services/CalibrationService ';
 import waypointService from '../services/WaypointService ';
+import {
+  COLORS, FONTS, SPACING, RADIUS, SHADOWS, COMMON, moderateScale, SCREEN,
+} from '../theme';
 
 export default function CalibrationScreen({ navigation }) {
   const [pillars, setPillars] = useState([]);
@@ -489,65 +493,65 @@ export default function CalibrationScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={COLORS.textInverse} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Calibration & Pillars</Text>
         <View style={[styles.statusDot, connected && styles.statusConnected]} />
       </View>
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         {/* ESP32 Connection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ESP32 Connection</Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="wifi" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>ESP32 Connection</Text>
+          </View>
           <View style={styles.ipRow}>
-            <TextInput
-              style={styles.ipInput}
-              value={esp32Ip}
-              onChangeText={setEsp32Ip}
-              placeholder="192.168.1.100"
-              keyboardType="numeric"
-            />
-            <TouchableOpacity onPress={handleUpdateIP} style={styles.updateButton}>
-              <Text style={styles.buttonText}>Update</Text>
+            <TextInput style={styles.ipInput} value={esp32Ip} onChangeText={setEsp32Ip} placeholder="192.168.1.100" placeholderTextColor={COLORS.textTertiary} keyboardType="numeric" />
+            <TouchableOpacity onPress={handleUpdateIP} style={styles.updateButton} activeOpacity={0.8}>
+              <Text style={styles.updateButtonText}>Update</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.statusText}>
-            Status: {connected ? '✓ Connected' : '✗ Disconnected'}
-          </Text>
+          <View style={styles.connectionStatus}>
+            <Ionicons name={connected ? "checkmark-circle" : "close-circle"} size={moderateScale(14)} color={connected ? COLORS.success : COLORS.danger} />
+            <Text style={[styles.connectionText, { color: connected ? COLORS.success : COLORS.textTertiary }]}>
+              {connected ? 'Connected' : 'Disconnected'}
+            </Text>
+          </View>
         </View>
 
         {/* Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
-          <TouchableOpacity onPress={handleRefresh} style={styles.actionButton} disabled={loading}>
-            <Text style={styles.actionButtonText}>🔄 Refresh from ESP32</Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="flash" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Quick Actions</Text>
+          </View>
+          <TouchableOpacity onPress={handleRefresh} style={styles.actionButton} disabled={loading} activeOpacity={0.8}>
+            <Ionicons name="refresh" size={moderateScale(16)} color={COLORS.textInverse} />
+            <Text style={styles.actionButtonText}>Refresh from ESP32</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Bulk Import Section */}
+        {/* Bulk Import */}
         {showImport && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Bulk Import Data</Text>
-            <Text style={styles.importHelp}>
-              Paste spreadsheet data (tab or comma separated). Format:
-              {'\n'}index, trackPathId, latitude, longitude, pillerName, front, frontTotal, back, backTotal
+            <View style={styles.sectionHeader}>
+              <Ionicons name="cloud-upload" size={moderateScale(18)} color={COLORS.primary} />
+              <Text style={styles.sectionTitle}>Bulk Import Data</Text>
+            </View>
+            <Text style={styles.helpText}>
+              Paste spreadsheet data (tab or comma separated).{'\n'}Format: index, trackPathId, latitude, longitude, pillerName, front, frontTotal, back, backTotal
             </Text>
-            <TextInput
-              style={styles.importTextInput}
-              value={bulkImportText}
-              onChangeText={setBulkImportText}
-              placeholder="Paste your data here..."
-              multiline
-              numberOfLines={10}
-            />
+            <TextInput style={styles.importTextInput} value={bulkImportText} onChangeText={setBulkImportText} placeholder="Paste your data here..." placeholderTextColor={COLORS.textTertiary} multiline numberOfLines={10} />
             <View style={styles.importButtonRow}>
-              <TouchableOpacity onPress={handleLoadSample} style={styles.sampleButton}>
-                <Text style={styles.buttonText}>Load Sample</Text>
+              <TouchableOpacity onPress={handleLoadSample} style={styles.sampleButton} activeOpacity={0.8}>
+                <Text style={styles.sampleButtonText}>Load Sample</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleBulkImport} style={styles.importSubmitButton} disabled={loading}>
-                <Text style={styles.buttonText}>Import</Text>
+              <TouchableOpacity onPress={handleBulkImport} style={styles.importSubmitButton} disabled={loading} activeOpacity={0.8}>
+                <Text style={styles.importSubmitText}>Import</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -555,159 +559,103 @@ export default function CalibrationScreen({ navigation }) {
 
         {/* Statistics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Statistics</Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="bar-chart" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Statistics</Text>
+          </View>
           <View style={styles.statsRow}>
-            <View style={styles.statBox}>
+            <View style={styles.statCard}>
               <Text style={styles.statNumber}>{pillars.length}</Text>
               <Text style={styles.statLabel}>Pillars</Text>
             </View>
-            <View style={styles.statBox}>
+            <View style={styles.statCard}>
               <Text style={styles.statNumber}>{waypoints.length}</Text>
               <Text style={styles.statLabel}>Waypoints</Text>
             </View>
           </View>
         </View>
-        
 
         {/* Current Location */}
         {currentLocation && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📍 Current Location</Text>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="navigate" size={moderateScale(18)} color={COLORS.primary} />
+              <Text style={styles.sectionTitle}>Current Location</Text>
+            </View>
             <Text style={styles.locationText}>
               {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
             </Text>
           </View>
         )}
 
-        {/* Add Pillar Section */}
+        {/* Add Pillar */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Add New Pillar</Text>
-          <TouchableOpacity
-            onPress={() => setShowAddPillar(true)}
-            style={styles.addButton}
-          >
-            <Text style={styles.addButtonText}>➕ Add Pillar</Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="add-circle" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Add New Pillar</Text>
+          </View>
+          <TouchableOpacity onPress={() => setShowAddPillar(true)} style={styles.addButton} activeOpacity={0.8}>
+            <Ionicons name="add" size={moderateScale(18)} color={COLORS.textInverse} />
+            <Text style={styles.addButtonText}>Add Pillar</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Calibration Section */}
+        {/* Calibration */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Calibrate Waypoints</Text>
-          
+          <View style={styles.sectionHeader}>
+            <Ionicons name="speedometer" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Calibrate Waypoints</Text>
+          </View>
           {!isCalibrating ? (
             <>
               <Text style={styles.label}>Select Pillar:</Text>
               <View style={styles.pillarSelector}>
                 {pillars.map((pillar) => (
-                  <TouchableOpacity
-                    key={pillar.id}
-                    style={[
-                      styles.pillarOption,
-                      selectedPillar === pillar.id && styles.pillarOptionSelected,
-                    ]}
-                    onPress={() => setSelectedPillar(pillar.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.pillarOptionText,
-                        selectedPillar === pillar.id && styles.pillarOptionTextSelected,
-                      ]}
-                    >
-                      {pillar.name}
-                    </Text>
+                  <TouchableOpacity key={pillar.id} style={[styles.pillarChip, selectedPillar === pillar.id && styles.pillarChipSelected]} onPress={() => setSelectedPillar(pillar.id)} activeOpacity={0.7}>
+                    <Text style={[styles.pillarChipText, selectedPillar === pillar.id && styles.pillarChipTextSelected]}>{pillar.name}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-
               <Text style={styles.label}>Distance per Waypoint (meters):</Text>
-              <TextInput
-                style={styles.input}
-                value={targetDistance}
-                onChangeText={setTargetDistance}
-                placeholder="1000"
-                keyboardType="numeric"
-              />
-              <Text style={styles.helpText}>
-                Waypoints will be recorded automatically every {targetDistance}m while the train moves
-              </Text>
-
-              <TouchableOpacity
-                onPress={handleStartCalibration}
-                style={styles.calibrateButton}
-                disabled={!selectedPillar || loading}
-              >
-                <Text style={styles.calibrateButtonText}>🚂 Start Calibration</Text>
+              <TextInput style={styles.input} value={targetDistance} onChangeText={setTargetDistance} placeholder="1000" placeholderTextColor={COLORS.textTertiary} keyboardType="numeric" />
+              <Text style={styles.helpText}>Waypoints will be recorded every {targetDistance}m while the train moves</Text>
+              <TouchableOpacity onPress={handleStartCalibration} style={styles.calibrateButton} disabled={!selectedPillar || loading} activeOpacity={0.8}>
+                <Ionicons name="train" size={moderateScale(16)} color={COLORS.textInverse} />
+                <Text style={styles.calibrateButtonText}>Start Calibration</Text>
               </TouchableOpacity>
             </>
           ) : (
             <View style={styles.calibrationActive}>
-              <Text style={styles.calibrationTitle}>🔴 Calibration Active</Text>
-              <Text style={styles.calibrationPillar}>
-                Pillar: {pillars.find(p => p.id === selectedPillar)?.name}
-              </Text>
-              
-              {/* Elapsed Time */}
-              <View style={styles.timeContainer}>
-                <Text style={styles.timeLabel}>Elapsed Time:</Text>
-                <Text style={styles.timeValue}>
-                  {Math.floor(elapsedTime / 60)}:{String(elapsedTime % 60).padStart(2, '0')}
-                </Text>
+              <View style={styles.calibrationHeader}>
+                <View style={styles.liveIndicatorDot} />
+                <Text style={styles.calibrationTitle}>Calibration Active</Text>
               </View>
-              
+              <Text style={styles.calibrationPillar}>Pillar: {pillars.find(p => p.id === selectedPillar)?.name}</Text>
+              <View style={styles.timeContainer}>
+                <Ionicons name="timer-outline" size={moderateScale(18)} color={COLORS.accent} />
+                <Text style={styles.timeValue}>{Math.floor(elapsedTime / 60)}:{String(elapsedTime % 60).padStart(2, '0')}</Text>
+              </View>
               {calibrationStatus && (
                 <View style={styles.calibrationStats}>
+                  <View style={styles.statRow}><Text style={styles.statRowLabel}>Real Distance:</Text><Text style={styles.statRowValue}>{calibrationStatus.realDistance.toFixed(0)}m / {calibrationStatus.targetDistance}m</Text></View>
+                  <View style={styles.statRow}><Text style={styles.statRowLabel}>Straight Distance:</Text><Text style={styles.statRowValue}>{calibrationStatus.straightDistance.toFixed(0)}m</Text></View>
+                  <View style={styles.statRow}><Text style={styles.statRowLabel}>Waypoints:</Text><Text style={styles.statRowValue}>{calibrationStatus.waypointsRecorded}</Text></View>
+                  <View style={styles.statRow}><Text style={styles.statRowLabel}>Velocity:</Text><Text style={styles.statRowValue}>{calibrationStatus.velocity?.toFixed(2) || '0.00'} m/s</Text></View>
                   <View style={styles.statRow}>
-                    <Text style={styles.statLabel}>Real Distance (Walked):</Text>
-                    <Text style={styles.statValue}>
-                      {calibrationStatus.realDistance.toFixed(0)}m / {calibrationStatus.targetDistance}m
+                    <Text style={styles.statRowLabel}>Calibrated:</Text>
+                    <Text style={[styles.statRowValue, { color: calibrationStatus.isCalibrated ? COLORS.success : COLORS.danger }]}>
+                      {calibrationStatus.isCalibrated ? 'Yes' : 'No'}
                     </Text>
                   </View>
-                  
-                  <View style={styles.statRow}>
-                    <Text style={styles.statLabel}>Straight Distance (GPS):</Text>
-                    <Text style={styles.statValue}>
-                      {calibrationStatus.straightDistance.toFixed(0)}m
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.statRow}>
-                    <Text style={styles.statLabel}>Waypoints Recorded:</Text>
-                    <Text style={styles.statValue}>{calibrationStatus.waypointsRecorded}</Text>
-                  </View>
-                  
-                  <View style={styles.statRow}>
-                    <Text style={styles.statLabel}>Current Velocity:</Text>
-                    <Text style={styles.statValue}>
-                      {calibrationStatus.velocity?.toFixed(2) || '0.00'} m/s
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.statRow}>
-                    <Text style={styles.statLabel}>Calibrated:</Text>
-                    <Text style={[styles.statValue, { color: calibrationStatus.isCalibrated ? '#4CAF50' : '#F44336' }]}>
-                      {calibrationStatus.isCalibrated ? '✓ Yes' : '✗ No'}
-                    </Text>
-                  </View>
-                  
-                  {/* Live update indicator */}
-                  <View style={styles.liveIndicator}>
-                    <View style={styles.liveDot} />
+                  <View style={styles.liveRow}>
+                    <View style={styles.liveIndicatorDotSmall} />
                     <Text style={styles.liveText}>Live Update (Every 1s)</Text>
                   </View>
-                  
-                  <Text style={styles.helpText}>
-                    💡 Real distance: Actual path walked (accelerometer)
-                    {'\n'}📍 Straight distance: Direct line from start (GPS)
-                    {'\n'}🚶 Walk normally to track distance accurately
-                  </Text>
                 </View>
               )}
-
-              <TouchableOpacity
-                onPress={handleStopCalibration}
-                style={styles.stopButton}
-              >
-                <Text style={styles.stopButtonText}>⏹ Stop Calibration</Text>
+              <TouchableOpacity onPress={handleStopCalibration} style={styles.stopButton} activeOpacity={0.8}>
+                <Ionicons name="stop-circle" size={moderateScale(16)} color={COLORS.textInverse} />
+                <Text style={styles.stopButtonText}>Stop Calibration</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -715,40 +663,27 @@ export default function CalibrationScreen({ navigation }) {
 
         {/* Pillars List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Available Pillars ({pillars.length})</Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="list" size={moderateScale(18)} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Available Pillars ({pillars.length})</Text>
+          </View>
           {pillars.length === 0 ? (
-            <Text style={styles.emptyText}>No pillars yet. Add one to get started.</Text>
+            <View style={styles.emptyContainer}>
+              <Ionicons name="compass-outline" size={moderateScale(36)} color={COLORS.textTertiary} />
+              <Text style={styles.emptyText}>No pillars yet. Add one to get started.</Text>
+            </View>
           ) : (
             pillars.map((pillar) => (
               <View key={pillar.id} style={styles.pillarItem}>
                 <View style={styles.pillarInfo}>
                   <Text style={styles.pillarItemName}>{pillar.name}</Text>
-                  <Text style={styles.pillarItemCoords}>
-                    {pillar.lat.toFixed(6)}, {pillar.lon.toFixed(6)}
-                  </Text>
-                  <Text style={styles.pillarItemWaypoints}>
-                    {waypoints.filter(wp => wp.pillarId === pillar.id || wp.pillerName === pillar.name).length} waypoints
-                  </Text>
+                  <Text style={styles.pillarItemCoords}>{pillar.lat.toFixed(6)}, {pillar.lon.toFixed(6)}</Text>
+                  <Text style={styles.pillarItemWaypoints}>{waypoints.filter(wp => wp.pillarId === pillar.id || wp.pillerName === pillar.name).length} waypoints</Text>
                 </View>
                 <View style={styles.pillarActions}>
-                  <TouchableOpacity 
-                    onPress={() => handleViewWaypoints(pillar)}
-                    style={styles.iconButton}
-                  >
-                    <Text style={styles.iconButtonText}>👁</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    onPress={() => handleEditPillar(pillar)}
-                    style={styles.iconButton}
-                  >
-                    <Text style={styles.iconButtonText}>✏</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    onPress={() => handleDeletePillar(pillar)}
-                    style={styles.iconButton}
-                  >
-                    <Text style={styles.iconButtonText}>🗑</Text>
-                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleViewWaypoints(pillar)} style={styles.iconBtn} activeOpacity={0.7}><Ionicons name="eye-outline" size={moderateScale(18)} color={COLORS.info} /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleEditPillar(pillar)} style={styles.iconBtn} activeOpacity={0.7}><Ionicons name="create-outline" size={moderateScale(18)} color={COLORS.accent} /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDeletePillar(pillar)} style={styles.iconBtn} activeOpacity={0.7}><Ionicons name="trash-outline" size={moderateScale(18)} color={COLORS.danger} /></TouchableOpacity>
                 </View>
               </View>
             ))
@@ -757,64 +692,24 @@ export default function CalibrationScreen({ navigation }) {
       </ScrollView>
 
       {/* Add Pillar Modal */}
-      <Modal
-        visible={showAddPillar}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowAddPillar(false)}
-      >
+      <Modal visible={showAddPillar} animationType="slide" transparent onRequestClose={() => setShowAddPillar(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add New Pillar</Text>
-            
             <Text style={styles.label}>Pillar Name:</Text>
-            <TextInput
-              style={styles.input}
-              value={newPillarName}
-              onChangeText={setNewPillarName}
-              placeholder="e.g., Pillar A"
-            />
-
-            <TouchableOpacity
-              onPress={handleAddPillarHere}
-              style={styles.primaryButton}
-              disabled={loading || !currentLocation}
-            >
-              <Text style={styles.buttonText}>
-                📍 Add Pillar Here (Current Location)
-              </Text>
+            <TextInput style={styles.input} value={newPillarName} onChangeText={setNewPillarName} placeholder="e.g., Pillar A" placeholderTextColor={COLORS.textTertiary} />
+            <TouchableOpacity onPress={handleAddPillarHere} style={styles.primaryButton} disabled={loading || !currentLocation} activeOpacity={0.8}>
+              <Ionicons name="navigate" size={moderateScale(16)} color={COLORS.textInverse} />
+              <Text style={styles.primaryButtonText}>Add at Current Location</Text>
             </TouchableOpacity>
-
-            <Text style={styles.orText}>— OR —</Text>
-
+            <View style={styles.orDivider}><View style={styles.orLine} /><Text style={styles.orText}>OR</Text><View style={styles.orLine} /></View>
             <Text style={styles.label}>Manual Coordinates:</Text>
-            <TextInput
-              style={styles.input}
-              value={manualLat}
-              onChangeText={setManualLat}
-              placeholder="Latitude"
-              keyboardType="decimal-pad"
-            />
-            <TextInput
-              style={styles.input}
-              value={manualLon}
-              onChangeText={setManualLon}
-              placeholder="Longitude"
-              keyboardType="decimal-pad"
-            />
-
-            <TouchableOpacity
-              onPress={handleAddPillarManual}
-              style={styles.secondaryButton}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>Add with Manual Coordinates</Text>
+            <TextInput style={styles.input} value={manualLat} onChangeText={setManualLat} placeholder="Latitude" placeholderTextColor={COLORS.textTertiary} keyboardType="decimal-pad" />
+            <TextInput style={styles.input} value={manualLon} onChangeText={setManualLon} placeholder="Longitude" placeholderTextColor={COLORS.textTertiary} keyboardType="decimal-pad" />
+            <TouchableOpacity onPress={handleAddPillarManual} style={styles.secondaryButton} disabled={loading} activeOpacity={0.8}>
+              <Text style={styles.secondaryButtonText}>Add with Manual Coordinates</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowAddPillar(false)}
-              style={styles.cancelButton}
-            >
+            <TouchableOpacity onPress={() => setShowAddPillar(false)} style={styles.cancelButton} activeOpacity={0.7}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -822,54 +717,20 @@ export default function CalibrationScreen({ navigation }) {
       </Modal>
 
       {/* Edit Pillar Modal */}
-      <Modal
-        visible={showEditPillar}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEditPillar(false)}
-      >
+      <Modal visible={showEditPillar} animationType="slide" transparent onRequestClose={() => setShowEditPillar(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Pillar</Text>
-            
             <Text style={styles.label}>Pillar Name:</Text>
-            <TextInput
-              style={styles.input}
-              value={editPillarName}
-              onChangeText={setEditPillarName}
-              placeholder="e.g., Pillar A"
-            />
-
+            <TextInput style={styles.input} value={editPillarName} onChangeText={setEditPillarName} placeholder="e.g., Pillar A" placeholderTextColor={COLORS.textTertiary} />
             <Text style={styles.label}>Latitude:</Text>
-            <TextInput
-              style={styles.input}
-              value={editPillarLat}
-              onChangeText={setEditPillarLat}
-              placeholder="Latitude"
-              keyboardType="decimal-pad"
-            />
-
+            <TextInput style={styles.input} value={editPillarLat} onChangeText={setEditPillarLat} placeholder="Latitude" placeholderTextColor={COLORS.textTertiary} keyboardType="decimal-pad" />
             <Text style={styles.label}>Longitude:</Text>
-            <TextInput
-              style={styles.input}
-              value={editPillarLon}
-              onChangeText={setEditPillarLon}
-              placeholder="Longitude"
-              keyboardType="decimal-pad"
-            />
-
-            <TouchableOpacity
-              onPress={handleUpdatePillar}
-              style={styles.primaryButton}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>Update Pillar</Text>
+            <TextInput style={styles.input} value={editPillarLon} onChangeText={setEditPillarLon} placeholder="Longitude" placeholderTextColor={COLORS.textTertiary} keyboardType="decimal-pad" />
+            <TouchableOpacity onPress={handleUpdatePillar} style={styles.primaryButton} disabled={loading} activeOpacity={0.8}>
+              <Text style={styles.primaryButtonText}>Update Pillar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowEditPillar(false)}
-              style={styles.cancelButton}
-            >
+            <TouchableOpacity onPress={() => setShowEditPillar(false)} style={styles.cancelButton} activeOpacity={0.7}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -877,100 +738,51 @@ export default function CalibrationScreen({ navigation }) {
       </Modal>
 
       {/* Waypoints Modal */}
-      <Modal
-        visible={showWaypoints}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowWaypoints(false)}
-      >
+      <Modal visible={showWaypoints} animationType="slide" transparent onRequestClose={() => setShowWaypoints(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContentLarge}>
             <Text style={styles.modalTitle}>Waypoints ({selectedPillarWaypoints.length})</Text>
-            
-            <ScrollView style={styles.waypointsScroll}>
+            <ScrollView style={styles.waypointsScroll} showsVerticalScrollIndicator={false}>
               {selectedPillarWaypoints.length === 0 ? (
-                <Text style={styles.emptyText}>No waypoints for this pillar</Text>
+                <View style={styles.emptyContainer}><Text style={styles.emptyText}>No waypoints for this pillar</Text></View>
               ) : (
                 selectedPillarWaypoints.map((waypoint, index) => (
                   <View key={waypoint.id || index} style={styles.waypointCard}>
                     <View style={styles.waypointInfo}>
-                      <Text style={styles.waypointTitle}>
-                        Waypoint {waypoint.index || index + 1}
-                      </Text>
-                      <Text style={styles.waypointCoords}>
-                        Lat: {waypoint.lat?.toFixed(6) || 'N/A'}
-                      </Text>
-                      <Text style={styles.waypointCoords}>
-                        Lon: {waypoint.lon?.toFixed(6) || 'N/A'}
-                      </Text>
+                      <Text style={styles.waypointTitle}>Waypoint {waypoint.index || index + 1}</Text>
+                      <Text style={styles.waypointCoords}>Lat: {waypoint.lat?.toFixed(6) || 'N/A'}</Text>
+                      <Text style={styles.waypointCoords}>Lon: {waypoint.lon?.toFixed(6) || 'N/A'}</Text>
                     </View>
-                    <View style={styles.waypointActions}>
-                      <TouchableOpacity 
-                        onPress={() => handleDeleteWaypoint(waypoint)}
-                        style={styles.iconButton}
-                      >
-                        <Text style={styles.iconButtonText}>🗑</Text>
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={() => handleDeleteWaypoint(waypoint)} style={styles.iconBtn} activeOpacity={0.7}>
+                      <Ionicons name="trash-outline" size={moderateScale(18)} color={COLORS.danger} />
+                    </TouchableOpacity>
                   </View>
                 ))
               )}
             </ScrollView>
-
-            <TouchableOpacity
-              onPress={() => setShowWaypoints(false)}
-              style={styles.primaryButton}
-            >
-              <Text style={styles.buttonText}>Close</Text>
+            <TouchableOpacity onPress={() => setShowWaypoints(false)} style={styles.primaryButton} activeOpacity={0.8}>
+              <Text style={styles.primaryButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
       {/* Edit Waypoint Modal */}
-      <Modal
-        visible={showEditWaypoint}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEditWaypoint(false)}
-      >
+      <Modal visible={showEditWaypoint} animationType="slide" transparent onRequestClose={() => setShowEditWaypoint(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Waypoint</Text>
-            
             <Text style={styles.label}>Distance from Pillar (meters):</Text>
-            <TextInput
-              style={styles.input}
-              value={editWaypointDistance}
-              onChangeText={setEditWaypointDistance}
-              placeholder="0"
-              keyboardType="numeric"
-            />
-            <Text style={styles.helpText}>
-              Negative = before pillar, Positive = after pillar
-            </Text>
-
+            <TextInput style={styles.input} value={editWaypointDistance} onChangeText={setEditWaypointDistance} placeholder="0" placeholderTextColor={COLORS.textTertiary} keyboardType="numeric" />
+            <Text style={styles.helpText}>Negative = before pillar, Positive = after pillar</Text>
             <Text style={styles.label}>Description:</Text>
-            <TextInput
-              style={styles.input}
-              value={editWaypointDescription}
-              onChangeText={setEditWaypointDescription}
-              placeholder="Waypoint description"
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                onPress={() => setShowEditWaypoint(false)}
-                style={[styles.modalButton, styles.cancelButton]}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
+            <TextInput style={styles.input} value={editWaypointDescription} onChangeText={setEditWaypointDescription} placeholder="Waypoint description" placeholderTextColor={COLORS.textTertiary} />
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity onPress={() => setShowEditWaypoint(false)} style={styles.cancelButtonModal} activeOpacity={0.7}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSaveWaypoint}
-                style={[styles.modalButton, styles.saveButton]}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>Save</Text>
+              <TouchableOpacity onPress={handleSaveWaypoint} style={styles.saveButton} disabled={loading} activeOpacity={0.8}>
+                <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -979,7 +791,10 @@ export default function CalibrationScreen({ navigation }) {
 
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#2196F3" />
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Processing...</Text>
+          </View>
         </View>
       )}
     </SafeAreaView>
@@ -987,497 +802,213 @@ export default function CalibrationScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+
+  // Header
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 8,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#2196F3',
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#212121',
-  },
-  placeholder: {
-    width: 60,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 12,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#757575',
-    fontFamily: 'monospace',
-  },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212121',
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  pillarSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-  },
-  pillarOption: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  pillarOptionSelected: {
-    backgroundColor: '#2196F3',
-    borderColor: '#1976D2',
-  },
-  pillarOptionText: {
-    fontSize: 14,
-    color: '#212121',
-    fontWeight: '500',
-  },
-  pillarOptionTextSelected: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  helpText: {
-    fontSize: 12,
-    color: '#757575',
-    marginBottom: 16,
-    fontStyle: 'italic',
-  },
-  calibrateButton: {
-    backgroundColor: '#FF9800',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  calibrateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  calibrationActive: {
-    backgroundColor: '#FFF3E0',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#FF9800',
-  },
-  calibrationTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F57C00',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  calibrationPillar: {
-    fontSize: 16,
-    color: '#212121',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  calibrationStats: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#757575',
-  },
-  statValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#212121',
-  },
-  progressBar: {
-    height: 20,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginVertical: 8,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#4CAF50',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#212121',
-    textAlign: 'center',
-    zIndex: 1,
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF3E0',
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 12,
-  },
-  timeLabel: {
-    fontSize: 14,
-    color: '#757575',
-    marginRight: 8,
-  },
-  timeValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF9800',
-    fontFamily: 'monospace',
-  },
-  liveIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4CAF50',
-    marginRight: 6,
-  },
-  liveText: {
-    fontSize: 12,
-    color: '#4CAF50',
-    fontWeight: '600',
-  },
-  stopButton: {
-    backgroundColor: '#F44336',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  stopButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  pillarItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  pillarInfo: {
-    flex: 1,
-  },
-  pillarActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    padding: 8,
-    marginLeft: 4,
-  },
-  iconButtonText: {
-    fontSize: 18,
-  },
-  pillarItemWaypoints: {
-    fontSize: 11,
-    color: '#2196F3',
-    marginTop: 4,
-  },
-  modalContentLarge: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    width: '90%',
-    maxWidth: 500,
-    maxHeight: '80%',
-  },
-  waypointsScroll: {
-    maxHeight: 400,
-    marginBottom: 16,
-  },
-  waypointCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  waypointInfo: {
-    flex: 1,
-  },
-  waypointActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  waypointTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212121',
-    marginBottom: 4,
-  },
-  waypointCoords: {
-    fontSize: 12,
-    color: '#757575',
-  },
-  waypointDetail: {
-    fontSize: 11,
-    color: '#2196F3',
-    marginTop: 2,
-  },
-  deleteWaypointButton: {
-    padding: 8,
-  },
-  deleteWaypointText: {
-    fontSize: 20,
-  },
-  pillarItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#212121',
-  },
-  pillarItemCoords: {
-    fontSize: 12,
-    color: '#757575',
-    marginTop: 4,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#757575',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: 16,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  secondaryButton: {
-    backgroundColor: '#2196F3',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  orText: {
-    textAlign: 'center',
-    color: '#757575',
-    marginVertical: 16,
-    fontSize: 14,
-  },
-  cancelButton: {
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  cancelButtonText: {
-    color: '#757575',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#F44336',
-  },
-  statusConnected: {
-    backgroundColor: '#4CAF50',
-  },
-  ipRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: SPACING.base, paddingVertical: SPACING.md,
+    backgroundColor: COLORS.primaryDark, ...SHADOWS.md,
+  },
+  backButton: { padding: SPACING.sm, borderRadius: RADIUS.md, backgroundColor: 'rgba(255,255,255,0.1)' },
+  headerTitle: { fontSize: moderateScale(17), fontWeight: '700', color: COLORS.textInverse, letterSpacing: 0.3 },
+  statusDot: { width: moderateScale(10), height: moderateScale(10), borderRadius: moderateScale(5), backgroundColor: COLORS.danger },
+  statusConnected: { backgroundColor: COLORS.success },
+
+  scrollView: { flex: 1 },
+  contentContainer: { padding: SPACING.base, paddingBottom: SPACING['3xl'] },
+
+  // Section Card
+  section: { ...COMMON.card, marginBottom: SPACING.base },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md },
+  sectionTitle: { ...FONTS.h4, color: COLORS.primary },
+
+  // Connection
+  ipRow: { flexDirection: 'row', marginBottom: SPACING.sm },
   ipInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    marginRight: 8,
+    flex: 1, ...COMMON.inputField, marginRight: SPACING.sm,
   },
   updateButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    justifyContent: 'center',
+    backgroundColor: COLORS.info, paddingHorizontal: SPACING.lg,
+    borderRadius: RADIUS.lg, justifyContent: 'center', ...SHADOWS.colored(COLORS.info),
   },
-  statusText: {
-    fontSize: 12,
-    color: '#757575',
-  },
+  updateButtonText: { color: COLORS.textInverse, fontWeight: '700', fontSize: moderateScale(13) },
+  connectionStatus: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  connectionText: { fontSize: moderateScale(12), fontWeight: '600' },
+
+  // Actions
   actionButton: {
-    backgroundColor: '#2196F3',
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.info,
+    padding: SPACING.md, borderRadius: RADIUS.lg, ...SHADOWS.colored(COLORS.info),
   },
-  importButton: {
-    backgroundColor: '#4CAF50',
+  actionButtonText: { color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: '700' },
+
+  // Stats
+  statsRow: { flexDirection: 'row', gap: SPACING.md },
+  statCard: {
+    flex: 1, backgroundColor: COLORS.primarySurface, borderRadius: RADIUS.lg,
+    padding: SPACING.lg, alignItems: 'center',
   },
-  clearButton: {
-    backgroundColor: '#F44336',
+  statNumber: { fontSize: moderateScale(32), fontWeight: '800', color: COLORS.primary },
+  statLabel: { ...FONTS.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
+
+  // Location
+  locationText: { ...FONTS.mono },
+
+  // Add Button
+  addButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.success,
+    padding: SPACING.base, borderRadius: RADIUS.lg, ...SHADOWS.colored(COLORS.success),
   },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+  addButtonText: { color: COLORS.textInverse, fontSize: moderateScale(15), fontWeight: '700' },
+
+  // Form
+  label: { ...FONTS.bodyBold, marginBottom: SPACING.sm, marginTop: SPACING.md },
+  input: { ...COMMON.inputField, marginBottom: SPACING.sm },
+  helpText: { ...FONTS.caption, fontStyle: 'italic', marginBottom: SPACING.base, color: COLORS.textTertiary },
+
+  // Pillar Selector Chips
+  pillarSelector: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.md },
+  pillarChip: {
+    backgroundColor: COLORS.background, paddingHorizontal: SPACING.base,
+    paddingVertical: SPACING.sm, borderRadius: RADIUS.full,
+    borderWidth: 1.5, borderColor: COLORS.border,
   },
-  importHelp: {
-    fontSize: 12,
-    color: '#757575',
-    marginBottom: 8,
-    lineHeight: 18,
+  pillarChipSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  pillarChipText: { fontSize: moderateScale(13), fontWeight: '600', color: COLORS.textSecondary },
+  pillarChipTextSelected: { color: COLORS.textInverse },
+
+  // Calibrate Button
+  calibrateButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.accent,
+    padding: SPACING.base, borderRadius: RADIUS.lg, marginTop: SPACING.sm,
+    ...SHADOWS.colored(COLORS.accent),
   },
+  calibrateButtonText: { color: COLORS.textInverse, fontSize: moderateScale(15), fontWeight: '700' },
+
+  // Calibration Active
+  calibrationActive: {
+    backgroundColor: COLORS.accentSurface, padding: SPACING.base,
+    borderRadius: RADIUS.lg, borderWidth: 1.5, borderColor: COLORS.accent,
+  },
+  calibrationHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
+  calibrationTitle: { fontSize: moderateScale(17), fontWeight: '700', color: COLORS.accentDark },
+  calibrationPillar: { ...FONTS.body, textAlign: 'center', marginBottom: SPACING.md },
+  calibrationStats: {
+    backgroundColor: COLORS.surface, padding: SPACING.md, borderRadius: RADIUS.md, marginBottom: SPACING.base,
+  },
+  statRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.sm },
+  statRowLabel: { ...FONTS.body, color: COLORS.textTertiary },
+  statRowValue: { ...FONTS.bodyBold },
+  timeContainer: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.accentSurface,
+    padding: SPACING.md, borderRadius: RADIUS.md, marginBottom: SPACING.md,
+  },
+  timeValue: { fontSize: moderateScale(22), fontWeight: '800', color: COLORS.accentDark, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  liveIndicatorDot: { width: moderateScale(10), height: moderateScale(10), borderRadius: moderateScale(5), backgroundColor: COLORS.danger },
+  liveIndicatorDotSmall: { width: moderateScale(6), height: moderateScale(6), borderRadius: moderateScale(3), backgroundColor: COLORS.success },
+  liveRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.xs, marginTop: SPACING.sm },
+  liveText: { ...FONTS.caption, color: COLORS.success, fontWeight: '600' },
+
+  // Stop Button
+  stopButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.danger,
+    padding: SPACING.base, borderRadius: RADIUS.lg, ...SHADOWS.colored(COLORS.danger),
+  },
+  stopButtonText: { color: COLORS.textInverse, fontSize: moderateScale(15), fontWeight: '700' },
+
+  // Pillar Items
+  pillarItem: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.divider,
+  },
+  pillarInfo: { flex: 1 },
+  pillarItemName: { ...FONTS.bodyBold, color: COLORS.text },
+  pillarItemCoords: { ...FONTS.caption, marginTop: SPACING.xs },
+  pillarItemWaypoints: { fontSize: moderateScale(11), color: COLORS.info, fontWeight: '600', marginTop: SPACING.xs },
+  pillarActions: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  iconBtn: { padding: SPACING.sm, borderRadius: RADIUS.md },
+
+  // Empty
+  emptyContainer: { alignItems: 'center', paddingVertical: SPACING.xl },
+  emptyText: { ...FONTS.body, color: COLORS.textTertiary, fontStyle: 'italic', marginTop: SPACING.sm },
+
+  // Modals
+  modalOverlay: { ...COMMON.modalOverlay },
+  modalContent: { ...COMMON.modalContent },
+  modalContentLarge: { ...COMMON.modalContentLarge },
+  modalTitle: { ...FONTS.h2, textAlign: 'center', marginBottom: SPACING.base },
+  waypointsScroll: { maxHeight: moderateScale(350), marginBottom: SPACING.base },
+
+  // Modal Buttons
+  primaryButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: SPACING.sm, backgroundColor: COLORS.primary,
+    padding: SPACING.base, borderRadius: RADIUS.lg, marginTop: SPACING.sm,
+    ...SHADOWS.colored(COLORS.primary),
+  },
+  primaryButtonText: { color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: '700' },
+  secondaryButton: {
+    backgroundColor: COLORS.info, padding: SPACING.base,
+    borderRadius: RADIUS.lg, alignItems: 'center', marginTop: SPACING.sm,
+    ...SHADOWS.colored(COLORS.info),
+  },
+  secondaryButtonText: { color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: '700' },
+  cancelButton: { padding: SPACING.base, alignItems: 'center', marginTop: SPACING.sm },
+  cancelButtonText: { color: COLORS.textTertiary, fontSize: moderateScale(14), fontWeight: '600' },
+  cancelButtonModal: {
+    flex: 1, backgroundColor: COLORS.background, borderRadius: RADIUS.lg,
+    padding: SPACING.md, alignItems: 'center', marginRight: SPACING.sm,
+  },
+  saveButton: {
+    flex: 1, backgroundColor: COLORS.primary, borderRadius: RADIUS.lg,
+    padding: SPACING.md, alignItems: 'center',
+  },
+  saveButtonText: { color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: '700' },
+  modalButtonRow: { flexDirection: 'row', marginTop: SPACING.base },
+
+  // OR Divider
+  orDivider: { flexDirection: 'row', alignItems: 'center', marginVertical: SPACING.base },
+  orLine: { flex: 1, height: 1, backgroundColor: COLORS.divider },
+  orText: { marginHorizontal: SPACING.md, color: COLORS.textTertiary, fontSize: moderateScale(12), fontWeight: '600' },
+
+  // Import
   importTextInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    marginBottom: 8,
-    minHeight: 150,
+    ...COMMON.inputField, minHeight: moderateScale(120), textAlignVertical: 'top',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', fontSize: moderateScale(11),
+    marginBottom: SPACING.sm,
   },
-  importButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
+  importButtonRow: { flexDirection: 'row', gap: SPACING.sm },
   sampleButton: {
-    backgroundColor: '#757575',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flex: 1,
-    marginRight: 8,
+    flex: 1, backgroundColor: COLORS.textTertiary, padding: SPACING.md,
+    borderRadius: RADIUS.lg, alignItems: 'center',
   },
+  sampleButtonText: { color: COLORS.textInverse, fontWeight: '600', fontSize: moderateScale(13) },
   importSubmitButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flex: 1,
+    flex: 1, backgroundColor: COLORS.success, padding: SPACING.md,
+    borderRadius: RADIUS.lg, alignItems: 'center',
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  importSubmitText: { color: COLORS.textInverse, fontWeight: '700', fontSize: moderateScale(13) },
+
+  // Waypoint Card
+  waypointCard: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: COLORS.background, padding: SPACING.md, borderRadius: RADIUS.md, marginBottom: SPACING.sm,
   },
-  statBox: {
-    alignItems: 'center',
+  waypointInfo: { flex: 1 },
+  waypointTitle: { ...FONTS.bodyBold, marginBottom: SPACING.xs },
+  waypointCoords: { ...FONTS.caption },
+
+  // Loading
+  loadingOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: COLORS.overlay, justifyContent: 'center', alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2196F3',
-  },
+  loadingCard: { backgroundColor: COLORS.surface, borderRadius: RADIUS.xl, padding: SPACING['2xl'], alignItems: 'center', ...SHADOWS.xl },
+  loadingText: { ...FONTS.body, marginTop: SPACING.md },
 });

@@ -1,39 +1,27 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Vibration } from "react-native";
 import { Audio } from "expo-av";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  COLORS, FONTS, SPACING, RADIUS, SHADOWS, moderateScale,
+} from "../theme";
 
 export default function RiskIndicator({ riskLevel }) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const soundRef = useRef(null); // for storing sound object
-
-  // -------------------------------------
-  // 🔊 Play Emergency Alarm Using expo-av
-  // -------------------------------------
+  const soundRef = useRef(null);
 
   const playAlarm = async () => {
-  try {
-const { sound } = await Audio.Sound.createAsync(
-  require("../../assets/alarm.mp3"),
-  {},
-  (status) => {}
-);
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require("../../assets/alarm.mp3"), {}, () => {}
+      );
+      soundRef.current = sound;
+      await sound.playAsync();
+      await sound.setIsLoopingAsync(true);
+      Vibration.vibrate([500, 300, 500], true);
+    } catch (error) {}
+  };
 
-
-    soundRef.current = sound;
-
-    await sound.playAsync();
-    await sound.setIsLoopingAsync(true);
-
-    Vibration.vibrate([500, 300, 500], true);
-
-  } catch (error) {
-  }
-};
-
-
-  // -------------------------------------
-  // 🔇 Stop Alarm & Vibration
-  // -------------------------------------
   const stopAlarm = async () => {
     try {
       if (soundRef.current) {
@@ -41,174 +29,103 @@ const { sound } = await Audio.Sound.createAsync(
         await soundRef.current.unloadAsync();
       }
       Vibration.cancel();
-    } catch (e) {
-    }
+    } catch (e) {}
   };
 
-  // -------------------------------------------------
-  // 🚨 Trigger alarm when risk level becomes critical
-  // -------------------------------------------------
   useEffect(() => {
-    if (riskLevel === "critical") {
-      playAlarm();
-    } else {
-      stopAlarm();
-    }
-    
-    // Cleanup when component unmounts
-    return () => {
-      stopAlarm();
-    };
+    if (riskLevel === "critical") { playAlarm(); } else { stopAlarm(); }
+    return () => { stopAlarm(); };
   }, [riskLevel]);
 
-  // -------------------------------
-  // 🔥 Pulse animation for critical
-  // -------------------------------
   useEffect(() => {
     if (riskLevel === "critical") {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
+          Animated.timing(pulseAnim, { toValue: 1.04, duration: 400, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
         ])
       ).start();
-    } else {
-      pulseAnim.setValue(1);
-    }
+    } else { pulseAnim.setValue(1); }
   }, [riskLevel]);
 
   if (!riskLevel || riskLevel === "none") return null;
 
-  // -------------------------
-  // ⚡ UI Config (Colors etc)
-  // -------------------------
   const config = {
     critical: {
-      color: "#F44336",
-      backgroundColor: "#FFEBEE",
-      borderColor: "#F44336",
-      text: "CRITICAL RISK",
-      subtext: "EMERGENCY BRAKING REQUIRED",
-      icon: "🚨",
+      bg: COLORS.dangerSurface, border: COLORS.danger, color: COLORS.danger,
+      text: "CRITICAL RISK", subtext: "EMERGENCY BRAKING REQUIRED",
+      icon: "warning", iconBg: COLORS.danger,
     },
     high: {
-      color: "#FF5722",
-      backgroundColor: "#FFF3E0",
-      borderColor: "#FF5722",
-      text: "HIGH RISK",
-      subtext: "Proceed with caution",
-      icon: "⚠",
+      bg: COLORS.warningSurface, border: COLORS.warning, color: COLORS.warning,
+      text: "HIGH RISK", subtext: "Proceed with extreme caution",
+      icon: "alert-circle", iconBg: COLORS.warning,
     },
     medium: {
-      color: "#FF9800",
-      backgroundColor: "#FFF8E1",
-      borderColor: "#FF9800",
-      text: "MEDIUM RISK",
-      subtext: "Exercise caution",
-      icon: "⚡",
+      bg: COLORS.accentSurface, border: COLORS.accent, color: COLORS.accentDark,
+      text: "MEDIUM RISK", subtext: "Exercise caution ahead",
+      icon: "flash", iconBg: COLORS.accent,
     },
     low: {
-      color: "#4CAF50",
-      backgroundColor: "#E8F5E9",
-      borderColor: "#4CAF50",
-      text: "LOW RISK",
-      subtext: "Monitor",
-      icon: "ℹ",
+      bg: COLORS.successSurface, border: COLORS.success, color: COLORS.success,
+      text: "LOW RISK", subtext: "Monitoring active",
+      icon: "information-circle", iconBg: COLORS.success,
     },
   }[riskLevel] || {
-    color: "#757575",
-    backgroundColor: "#F5F5F5",
-    borderColor: "#757575",
-    text: "UNKNOWN",
-    subtext: "Status unknown",
-    icon: "❓",
+    bg: COLORS.background, border: COLORS.border, color: COLORS.textTertiary,
+    text: "UNKNOWN", subtext: "Status unknown",
+    icon: "help-circle", iconBg: COLORS.textTertiary,
   };
-
-
 
   return (
     <Animated.View
       style={[
         styles.container,
-        {
-          backgroundColor: config.backgroundColor,
-          borderColor: config.borderColor,
-          transform: [{ scale: pulseAnim }],
-        },
+        { backgroundColor: config.bg, borderColor: config.border, transform: [{ scale: pulseAnim }] },
       ]}
     >
       <View style={styles.content}>
-        <Text style={styles.icon}>{config.icon}</Text>
+        <View style={[styles.iconCircle, { backgroundColor: config.iconBg }]}>
+          <Ionicons name={config.icon} size={moderateScale(24)} color={COLORS.textInverse} />
+        </View>
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: config.color }]}>
-            {config.text}
-          </Text>
+          <Text style={[styles.title, { color: config.color }]}>{config.text}</Text>
           <Text style={styles.subtext}>{config.subtext}</Text>
         </View>
       </View>
-
       {riskLevel === "critical" && (
-        <View style={styles.blinkingContainer}>
-          <Text style={styles.blinkingText}>⚠ EMERGENCY ⚠</Text>
-
+        <View style={styles.emergencyBar}>
+          <Ionicons name="warning" size={moderateScale(14)} color={COLORS.textInverse} />
+          <Text style={styles.emergencyText}>EMERGENCY</Text>
+          <Ionicons name="warning" size={moderateScale(14)} color={COLORS.textInverse} />
         </View>
       )}
-
-
-      
     </Animated.View>
   );
 }
 
-
-
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
-    borderWidth: 3,
-    padding: 20,
-    marginBottom: 16,
-    elevation: 4,
+    borderRadius: RADIUS.xl,
+    borderWidth: 2,
+    padding: SPACING.lg,
+    marginBottom: SPACING.base,
+    ...SHADOWS.md,
   },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
+  content: { flexDirection: "row", alignItems: "center" },
+  iconCircle: {
+    width: moderateScale(48), height: moderateScale(48), borderRadius: moderateScale(24),
+    justifyContent: "center", alignItems: "center", marginRight: SPACING.base,
   },
-  icon: {
-    fontSize: 40,
-    marginRight: 16,
+  textContainer: { flex: 1 },
+  title: { fontSize: moderateScale(20), fontWeight: "800", letterSpacing: 0.5, marginBottom: SPACING.xs },
+  subtext: { ...FONTS.body, color: COLORS.textSecondary },
+  emergencyBar: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    marginTop: SPACING.md, padding: SPACING.md, backgroundColor: COLORS.danger,
+    borderRadius: RADIUS.md, gap: SPACING.sm,
   },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  subtext: {
-    fontSize: 14,
-    color: "#757575",
-  },
-  blinkingContainer: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: "#F44336",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  blinkingText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 2,
+  emergencyText: {
+    color: COLORS.textInverse, fontSize: moderateScale(14), fontWeight: "800", letterSpacing: 2,
   },
 });
