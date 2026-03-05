@@ -7,36 +7,31 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import notificationStorageService from '../services/notificationStorageService';
+import notificationSyncService from '../services/notificationSyncService';
 import { AuthContext } from '../context/AuthContext';
 import { COLORS, FONTS, SPACING, RADIUS, SHADOWS, COMMON, moderateScale } from '../theme';
 
 export default function FirstAlertsScreen({ navigation }) {
-  const [notifications, setNotifications] = useState({});
+  const [notifications, setNotifications] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user, userProfile } = React.useContext(AuthContext);
+  const { user } = React.useContext(AuthContext);
 
   useEffect(() => {
     loadNotifications();
-  }, [user?.uid, userProfile?.trainNumber]);
+  }, [user?.uid]);
 
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      const allNotifications = await notificationStorageService.getFirstNotifications();
-      let filteredNotifications = allNotifications;
-      if (userProfile?.trainNumber) {
-        filteredNotifications = await notificationStorageService.getNotificationsByTrain(
-          userProfile.trainNumber
-        );
-      }
-      setNotifications(filteredNotifications);
+      const allNotifications = await notificationSyncService.getAllNotifications();
+      setNotifications(allNotifications);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error('Error loading notifications from Firestore:', error);
     } finally {
       setLoading(false);
     }
@@ -48,19 +43,16 @@ export default function FirstAlertsScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  const handleClearNotification = (compositeKey, notification) => {
+  const handleClearNotification = (notification) => {
     Alert.alert(
-      'Clear Notification',
-      `Are you sure you want to clear the alert from ${notification.pillarName}?`,
+      'Delete Notification',
+      `Are you sure you want to delete the alert from ${notification.pillarName || 'this pillar'}?`,
       [
         { text: 'Cancel', onPress: () => {} },
         {
-          text: 'Clear',
+          text: 'Delete',
           onPress: async () => {
-            await notificationStorageService.clearNotificationByPillar(
-              compositeKey,
-              notification.trainNumber
-            );
+            await notificationSyncService.deleteNotification(notification.id);
             await loadNotifications();
           },
           style: 'destructive',
@@ -71,14 +63,14 @@ export default function FirstAlertsScreen({ navigation }) {
 
   const handleClearAll = async () => {
     Alert.alert(
-      'Clear All Notifications',
-      'Are you sure you want to clear all pillar alerts?',
+      'Delete All Notifications',
+      'Are you sure you want to delete all notifications from Firestore? This cannot be undone.',
       [
         { text: 'Cancel', onPress: () => {} },
         {
-          text: 'Clear All',
+          text: 'Delete All',
           onPress: async () => {
-            await notificationStorageService.clearAllNotifications();
+            await notificationSyncService.deleteAllNotifications();
             await loadNotifications();
           },
           style: 'destructive',
@@ -114,10 +106,10 @@ export default function FirstAlertsScreen({ navigation }) {
     }
   };
 
-  const renderNotificationCard = (pillarIdentifier, notification, index) => {
+  const renderNotificationCard = (notification, index) => {
     const riskColor = getRiskColor(notification.riskLevel);
     return (
-      <View key={pillarIdentifier} style={styles.notificationCard}>
+      <View key={notification.id || index} style={styles.notificationCard}>
         <View style={styles.cardHeader}>
           <View style={[styles.iconCircle, { backgroundColor: riskColor + '18' }]}>
             <Ionicons name={getRiskIcon(notification.riskLevel)} size={moderateScale(20)} color={riskColor} />
@@ -126,9 +118,16 @@ export default function FirstAlertsScreen({ navigation }) {
             <Text style={styles.pillarName}>{notification.pillarName || 'Unknown Pillar'}</Text>
             <Text style={styles.pillarIndex}>Alert #{index + 1}</Text>
           </View>
-          <View style={[styles.riskBadge, { backgroundColor: riskColor }]}>
-            <Text style={styles.riskText}>{notification.riskLevel || 'Unknown'}</Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => handleClearNotification(notification)}
+            style={styles.deleteIconButton}
+          >
+            <Ionicons name="close-circle" size={moderateScale(22)} color={COLORS.danger} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.riskBadge, { backgroundColor: riskColor, alignSelf: 'flex-start', marginBottom: SPACING.sm }]}>
+          <Text style={styles.riskText}>{notification.riskLevel || 'Unknown'}</Text>
         </View>
 
         <View style={styles.divider} />
@@ -139,7 +138,7 @@ export default function FirstAlertsScreen({ navigation }) {
               <Ionicons name="time-outline" size={moderateScale(14)} color={COLORS.textTertiary} />
               <Text style={styles.label}>Date & Time</Text>
             </View>
-            <Text style={styles.value}>{formatDateTime(notification.timestamp)}</Text>
+            <Text style={styles.value}>{formatDateTime(notification.timestamp || notification.syncedAt || notification.localTimestamp)}</Text>
           </View>
 
           <View style={styles.infoRow}>
@@ -149,6 +148,16 @@ export default function FirstAlertsScreen({ navigation }) {
             </View>
             <Text style={styles.value}>{notification.trainNumber || 'N/A'}</Text>
           </View>
+
+          {notification.userEmail && (
+            <View style={styles.infoRow}>
+              <View style={styles.infoItem}>
+                <Ionicons name="person-outline" size={moderateScale(14)} color={COLORS.textTertiary} />
+                <Text style={styles.label}>Reported By</Text>
+              </View>
+              <Text style={styles.value}>{notification.userEmail}</Text>
+            </View>
+          )}
 
           {notification.distance && (
             <View style={styles.infoRow}>
@@ -174,8 +183,7 @@ export default function FirstAlertsScreen({ navigation }) {
     );
   };
 
-  const notificationArray = Object.entries(notifications);
-  const hasNotifications = notificationArray.length > 0;
+  const hasNotifications = notifications.length > 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -189,13 +197,13 @@ export default function FirstAlertsScreen({ navigation }) {
             <Text style={styles.headerTitle}>Pillar Alerts</Text>
             <Text style={styles.headerSubtitle}>
               {hasNotifications
-                ? `${notificationArray.length} pillar${notificationArray.length > 1 ? 's' : ''} detected`
-                : 'Notifications from pillars'}
+                ? `${notifications.length} alert${notifications.length > 1 ? 's' : ''} from Firestore`
+                : 'No notifications in Firestore'}
             </Text>
           </View>
           {hasNotifications && (
             <View style={styles.countBadge}>
-              <Text style={styles.countText}>{notificationArray.length}</Text>
+              <Text style={styles.countText}>{notifications.length}</Text>
             </View>
           )}
         </View>
@@ -209,11 +217,19 @@ export default function FirstAlertsScreen({ navigation }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} colors={[COLORS.primary]} />
         }
       >
+        {/* Loading Indicator */}
+        {loading && !refreshing && (
+          <View style={{ padding: SPACING.xl, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={{ ...FONTS.body, color: COLORS.textTertiary, marginTop: SPACING.md }}>Loading from Firestore...</Text>
+          </View>
+        )}
+
         {/* Notifications */}
         {hasNotifications && (
           <View style={styles.notificationsContainer}>
-            {notificationArray.map(([pillarId, notification], index) =>
-              renderNotificationCard(pillarId, notification, index)
+            {notifications.map((notification, index) =>
+              renderNotificationCard(notification, index)
             )}
           </View>
         )}
@@ -222,7 +238,7 @@ export default function FirstAlertsScreen({ navigation }) {
         {hasNotifications && (
           <TouchableOpacity style={styles.clearAllButton} onPress={handleClearAll} activeOpacity={0.8}>
             <Ionicons name="trash-outline" size={moderateScale(16)} color={COLORS.textInverse} />
-            <Text style={styles.clearAllButtonText}>Clear All Alerts</Text>
+            <Text style={styles.clearAllButtonText}>Delete All from Firestore</Text>
           </TouchableOpacity>
         )}
 
@@ -317,6 +333,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pillarInfo: { flex: 1 },
+  deleteIconButton: {
+    padding: SPACING.xs,
+  },
   pillarName: {
     ...FONTS.h4,
     color: COLORS.text,

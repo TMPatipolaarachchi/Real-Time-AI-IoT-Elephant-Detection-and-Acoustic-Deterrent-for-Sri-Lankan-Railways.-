@@ -218,11 +218,10 @@ class NotificationSyncService {
   }
 
   /**
-   * Get notifications from Firestore (requires user to be authenticated)
+   * Get notifications from Firestore for a specific user
    */
   async getStoredNotifications(userId, limit = 100) {
     try {
-      const auth = getAuth();
       const user = auth.currentUser;
 
       if (!user) {
@@ -254,6 +253,80 @@ class NotificationSyncService {
     } catch (error) {
       console.error('Error getting stored notifications:', error);
       return [];
+    }
+  }
+
+  /**
+   * Get ALL notifications from Firestore (for admin view)
+   * Returns all notifications regardless of userId
+   */
+  async getAllNotifications() {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.warn('User not authenticated');
+        return [];
+      }
+
+      const notificationsRef = collection(this.firestore, 'notifications');
+      const snapshot = await getDocs(notificationsRef);
+      const notifications = [];
+
+      snapshot.forEach(doc => {
+        notifications.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      // Sort by date descending
+      notifications.sort((a, b) => {
+        const dateA = new Date(b.syncedAt || b.localTimestamp || b.timestamp);
+        const dateB = new Date(a.syncedAt || a.localTimestamp || a.timestamp);
+        return dateA - dateB;
+      });
+
+      return notifications;
+    } catch (error) {
+      console.error('Error getting all notifications from Firestore:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Delete a single notification from Firestore by document ID
+   */
+  async deleteNotification(docId) {
+    try {
+      const { doc: firestoreDoc } = await import('firebase/firestore');
+      const docRef = firestoreDoc(this.firestore, 'notifications', docId);
+      await deleteDoc(docRef);
+      return true;
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Delete all notifications from Firestore
+   */
+  async deleteAllNotifications() {
+    try {
+      const notificationsRef = collection(this.firestore, 'notifications');
+      const snapshot = await getDocs(notificationsRef);
+      
+      const deletePromises = [];
+      snapshot.forEach(docSnap => {
+        deletePromises.push(deleteDoc(docSnap.ref));
+      });
+      
+      await Promise.all(deletePromises);
+      return true;
+    } catch (error) {
+      console.error('Error deleting all notifications:', error);
+      return false;
     }
   }
 }

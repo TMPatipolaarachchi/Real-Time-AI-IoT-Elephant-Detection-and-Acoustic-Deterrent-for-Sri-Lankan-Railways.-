@@ -23,6 +23,7 @@ import pillarService from '../services/PillarService ';
 import calibrationService from '../services/CalibrationService ';
 import authService from '../services/authService';
 import notificationStorageService from '../services/notificationStorageService';
+import notificationSyncService from '../services/notificationSyncService';
 import { AuthContext } from '../context/AuthContext';
 import {
   COLORS, FONTS, SPACING, RADIUS, SHADOWS, COMMON, moderateScale, SCREEN,
@@ -212,7 +213,14 @@ export default function DashboardScreen({ navigation }) {
   };
 
   const loadUnsyncedCount = async () => {
-    setUnsyncedCount(0);
+    try {
+      const status = await notificationSyncService.getSyncStatus();
+      setUnsyncedCount(status.pendingCount);
+      setSyncStatus(status);
+    } catch (error) {
+      console.error('Error loading unsynced count:', error);
+      setUnsyncedCount(0);
+    }
   };
 
   const loadESP32Status = async () => {
