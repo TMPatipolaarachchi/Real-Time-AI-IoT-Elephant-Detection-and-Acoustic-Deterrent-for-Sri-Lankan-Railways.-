@@ -7,14 +7,9 @@ Human–elephant conflicts along railway corridors are a critical conservation a
 This project introduces a **real-time AI- and IoT-driven system** that integrates **computer vision, behavior analysis, GPS-based train tracking, risk prediction, and mobile alerts** to proactively mitigate elephant–train collisions.
 
 ---
-
 ## 🎥 System Demonstration
 
-<video src="Media1.mp4" controls width="900"></video>
-
-*(Upload `Media1.mp4` to the repository root for the video to display.)*
-
----
+  [![Watch the Demo](https://img.youtube.com/vi/Vrugga7Ln0w/0.jpg)](https://youtu.be/Vrugga7Ln0w)
 
 ## 🧠 System Overview
 
