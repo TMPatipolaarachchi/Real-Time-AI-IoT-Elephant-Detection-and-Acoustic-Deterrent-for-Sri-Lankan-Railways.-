@@ -1,5 +1,3 @@
-
-
 # 🐘🚆 Real-Time AI & IoT Elephant–Train Conflict Mitigation System
 
 **AI-Powered Solution to Reduce Elephant–Train Collisions in Sri Lanka**
@@ -7,6 +5,14 @@
 Human–elephant conflicts along railway corridors are a critical conservation and public safety issue in Sri Lanka. Elephant–train collisions result in the loss of elephant lives, train delays, infrastructure damage, and potential risks to passengers.
 
 This project introduces a **real-time AI- and IoT-driven system** that integrates **computer vision, behavior analysis, GPS-based train tracking, risk prediction, and mobile alerts** to proactively mitigate elephant–train collisions.
+
+---
+
+## 🎥 System Demonstration
+
+<video src="Media1.mp4" controls width="900"></video>
+
+*(Upload `Media1.mp4` to the repository root for the video to display.)*
 
 ---
 
@@ -70,6 +76,7 @@ This project introduces a **real-time AI- and IoT-driven system** that integrate
 - **Track Clear:** Confirmation message allowing normal train operation
 
 ---
+
 ## 🛠 Technology Stack & Dependencies
 
 ### Frontend
@@ -85,7 +92,7 @@ This project introduces a **real-time AI- and IoT-driven system** that integrate
 - Risk Prediction Model
 
 ### IoT & Hardware
-- Rasbbary PI
+- Raspberry Pi
 - Camera Modules
 - GPS Modules
 - Speaker (Acoustic Deterrent)
@@ -99,7 +106,6 @@ This project introduces a **real-time AI- and IoT-driven system** that integrate
 ## 🗂 Repository Structure
 
 ```
-
 Elephant-Train-Conflict-System/
 ├── ElephantDetection/        # Elephant detection & classification models
 ├── elephant_behavior/        # Pose & sound-based behavior analysis
@@ -107,7 +113,6 @@ Elephant-Train-Conflict-System/
 ├── Alert-system/             # Driver alert & notification logic
 ├── Risk_Prediction/          # Multi-factor risk assessment module
 └── README.md                 # Project documentation
-
 ```
 
 ---
@@ -138,12 +143,14 @@ Elephant-Train-Conflict-System/
 
 🎓 **SLIIT – 4th Year IT Undergraduate Research Team**
 
-
 ---
 
 ## 🧾 Conclusion
 
 This project presents a **comprehensive AI- and IoT-enabled solution** to mitigate elephant–train collisions in Sri Lanka. By combining **intelligent perception, behavior-aware risk assessment, and real-time driver communication**, the system supports safer railway operations while promoting sustainable coexistence between wildlife and transportation infrastructure.
 
-https://github.com/TMPatipolaarachchi/Real-Time-AI-IoT-Elephant-Detection-and-Acoustic-Deterrent-for-Sri-Lankan-Railways.-.git
+---
 
+## 🔗 Repository
+
+https://github.com/TMPatipolaarachchi/Real-Time-AI-IoT-Elephant-Detection-and-Acoustic-Deterrent-for-Sri-Lankan-Railways.-.git
